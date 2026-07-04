@@ -28,17 +28,24 @@ All list/detail pages follow the same state pattern:
 ### Bottom Navigation Bar
 
 ```
-ShellScaffold
+ShellScaffold (ConsumerStatefulWidget)
 ├── BottomNavigationBar (4 tabs)
 │   ├── Tab 0: Home (icon: house)
 │   ├── Tab 1: Chat (icon: bubble.left.and.bubble.right / chat)
 │   ├── Tab 2: Git (icon: arrow.branch / code.branch)
 │   └── Tab 3: Settings (icon: gear)
 ├── body: GoRouter (per-tab nested navigation stack)
+└── PopScope (Android back handling)
+    └── onPopInvokedWithResult:
+        ├── If current tab has navigation stack > 1 → pop to previous route
+        ├── If on tab root → switch to Home tab (if not already Home)
+        └── If on Home tab root → show "Exit app?" dialog
 ```
 - **Active tab indicator:** Airtable coral/blue underline
 - **Badge:** Unread/unpushed count (Git tab when applicable)
 - **Transition:** No animation on tab switch (instant)
+- **Re-tap behavior:** Tapping already-active tab scrolls to top of its content
+- **Android back:** Back button pops the current tab's navigation stack; on tab root, switches to Home; on Home root, shows exit dialog
 
 ### Navigation Flow
 
@@ -133,12 +140,26 @@ EditorPage (ConsumerStatefulWidget)
 │   │       └── Child 1: PreviewPane (flutter_markdown)
 │   ├── Phone (landscape):
 │   │   └── Row
-│   │       ├── EditableArea (flex: 1)
+│   │       ├── EditableArea (flex: 2, min-width: 280dp)
 │   │       └── PreviewPane (flex: 1, overlay handle)
 │   └── Tablet (both orientations):
 │       └── Row
 │           ├── EditableArea (flex: 1)
 │           └── PreviewPane (flex: 1, always visible)
+└── (Back navigation guard)
+    └── PopScope (canPop: !hasUnsavedChanges)
+        └── onPopInvokedWithResult:
+            ├── if unsaved → show dialog: "Save before leaving?"
+            │   ├── "Discard" → pop without saving
+            │   ├── "Save" → save then pop
+            │   └── "Cancel" → stay
+            └── if saved → allow pop
+└── (Undo/Redo — integrated into FormatToolbar)
+    └── UndoButton (arrow.uturn.left, disabled when nothing to undo)
+        └── onTap: editorController.undo()
+    └── RedoButton (arrow.uturn.right, disabled when nothing to redo)
+        └── onTap: editorController.redo()
+    └── Keyboard: Cmd+Z (undo), Cmd+Shift+Z (redo)
 └── FloatingActionButton
     └── "Ask Maya" → opens PAGE-006 with doc context
 ```
@@ -183,16 +204,21 @@ NewDocPage (ConsumerWidget)
 ├── AppBar
 │   ├── Title: "New Document"
 │   └── Actions: [CancelButton]
-├── Body (Column)
-│   ├── TemplateCarousel
-│   │   ├── TemplateCard("Blank Document")
-│   │   ├── TemplateCard("Research Paper")
-│   │   ├── TemplateCard("Business Proposal")
-│   │   ├── TemplateCard("Meeting Notes")
-│   │   └── TemplateCard("Technical Spec")
-│   └── CreateButton (full-width, "Create from {selected template}")
+├── Body
+│   ├── Loading: full-screen skeleton (5 template card blocks in carousel shape)
+│   ├── Error: error-state with retry ("Could not load templates")
+│   └── Data (Column)
+│       ├── TemplateCarousel
+│       │   ├── TemplateCard("Blank Document")
+│       │   ├── TemplateCard("Research Paper")
+│       │   ├── TemplateCard("Business Proposal")
+│       │   ├── TemplateCard("Meeting Notes")
+│       │   └── TemplateCard("Technical Spec")
+│       └── CreateButton (full-width, "Create from {selected template}")
 ```
 - **On create:** Inserts Document into drift, navigates to PAGE-002
+- **Error handling:** If template fetch fails (local asset I/O error), show error state with retry
+- **Loading:** Templates loaded from assets; if assets not yet available (first launch), show skeleton
 
 ---
 
@@ -203,14 +229,19 @@ NewDocPage (ConsumerWidget)
 ### Widget Tree
 
 ```
-FullPreviewPage (StatelessWidget)
+FullPreviewPage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Leading: BackButton
 │   ├── Title: doc.title
 │   └── Actions: [ShareButton, ExportButton]
-└── Body: InteractiveViewer
-    └── MarkdownPreview (flutter_markdown, full-width)
+├── Body
+│   ├── Loading: centered CircularProgressIndicator with doc title skeleton
+│   ├── Error: error-state "Could not render preview" + retry
+│   └── Data: InteractiveViewer
+│       └── MarkdownPreview (flutter_markdown, full-width)
 ```
+- **Loading:** If document content not yet loaded from drift, show spinner
+- **Error:** Rendering failure (malformed markdown, unsupported LaTeX) → show error with retry and "Edit document" fallback
 - Full-screen preview with pinch-to-zoom
 - LaTeX renders with `flutter_markdown` LaTeX extension
 - Code blocks render with `highlight` package theme from settings
@@ -238,7 +269,9 @@ ChatListPage (ConsumerWidget)
             ├── Title: session.title (1 line)
             ├── Subtitle: agent.name + " · {timeAgo}" + " · {messageCount} msgs"
             ├── Trailing: TokenBadge(session.tokenCount)
-            └── onTap: → PAGE-006
+            ├── onTap: → PAGE-006
+            └── Swipe left: delete session
+                └── Confirmation dialog: "Delete '{title}'?" + "This cannot be undone." + CancelButton + DeleteButton (destructive)
 ```
 
 ---
@@ -256,13 +289,26 @@ ChatPage (ConsumerStatefulWidget)
 │   ├── Title: session.title (editable on tap)
 │   ├── Subtitle:
 │   │   ├── AgentSelectorChip(agentId, onChanged: switchAgent)
-│   │   │   └── PopupMenu: list of 13 agents
+│   │   │   ├── PopupMenu: list of 13 agents
+│   │   │   └── onSelect: show SwitchAgentConfirmation
+│   │   │       └── SwitchAgentConfirmation (BottomSheet):
+│   │   │           ├── Title: "Switch Agent?"
+│   │   │           ├── Message: "Changing the agent mid-conversation clears the current agent's context. The conversation history is preserved."
+│   │   │           ├── Note: "The new agent will not see previous tool results."
+│   │   │           ├── CancelButton, ConfirmSwitchButton
+│   │   │           └── "Don't show again" checkbox (stored in UserProfile)
 │   │   └── TaskTypeBadge(taskType, onTap: reclassify)
-│   │       └── Dropdown: all 13 task types
+│   │       ├── Dropdown: all 13 task types
+│   │       └── onSelect: show ReclassifyConfirmation
+│   │           └── ReclassifyConfirmation (BottomSheet):
+│   │               ├── Title: "Reclassify Task?"
+│   │               ├── Message: "Changing the task type from '{old}' to '{new}' affects model routing in Custom mode."
+│   │               ├── CancelButton, ConfirmReclassifyButton
 │   ├── Trailing:
-│   │   ├── TokenCounter(session.tokenCount)
+│   │   ├── TokenCounter(session.tokenCount) (collapses to icon on phone < 600dp)
 │   │   └── StopButton(visible only when generating, onTap: cancel)
-│   └── Bottom: AgentToolIndicator(list of active tools for current agent)
+│   └── Bottom: AgentToolIndicator(list of active tools, collapsible)
+│       └── Phone < 600dp: shows as tappable icon (wrench) that expands inline on tap
 ├── Body
 │   ├── Loading: centered CircularProgressIndicator
 │   ├── Empty: empty-state "Send a message to start" + suggested prompts
@@ -307,8 +353,9 @@ ChatPage (ConsumerStatefulWidget)
 ```
 StreamingTextWidget (StatefulWidget)
 ├── State tracks: full text, displayed text, animation progress
-├── on new token: setState with new displayed text
+├── on new token: batch tokens (max 50ms timer), setState with batch
 ├── Render: RichText with typewriter effect (10ms per character)
+├── Performance: batches incoming tokens into 50ms intervals to avoid excessive rebuilds
 └── Full text appears instantly on tap (skip animation)
 ```
 
@@ -371,7 +418,15 @@ NewChatPage (ConsumerWidget)
 │           Chip("Review my document")
 │           Chip("Debug my code")
 ```
-- **On agent tap:** Creates ChatSession with selected agent, navigates to PAGE-006
+- **On agent tap:** Show AgentConfirmation bottom sheet before creating session
+    └── AgentConfirmation (BottomSheet):
+        ├── AgentAvatar + AgentName (large)
+        ├── AgentDescription (2-3 lines describing capabilities)
+        ├── ToolListChips (tools this agent can use)
+        ├── Divider
+        ├── "Start with blank chat" button (primary)
+        ├── "Attach current document" button (if doc open in editor)
+        └── CancelButton
 
 ---
 
@@ -399,8 +454,13 @@ GitRepoListPage (ConsumerWidget)
 │           ├── Trailing: UnpushedBadge(repo.unpushedCount, if > 0)
 │           └── onTap: → PAGE-009(repo.id) // switches active repo
 ├── SwipeActions (per RepoListItem)
-│   ├── Swipe left: Remove from list (unlink, does NOT delete files)
+│   ├── Swipe left: Remove from list
+│   │   └── Shows confirmation dialog:
+│   │       ├── Title: "Remove {name}?"
+│   │       ├── Message: "This removes {name} from your repository list. Files on your device are NOT deleted. You can re-add the folder anytime."
+│   │       ├── CancelButton, RemoveButton (destructive, red)
 │   └── Swipe right: Pin to top (frequent repos stay accessible)
+│       └── Swipe right again: Unpin (toggle behavior)
 └── EmptyAppBarActions (when no repos)
     └── AddButtonRow: [InitLocalRepo, CloneRemoteRepo, OpenExistingFolder]
 ```
@@ -590,16 +650,27 @@ GitConflictPage (ConsumerStatefulWidget)
 │       ├── ConflictSection
 │       │   ├── VersionLabel: "Ours (current)"
 │       │   ├── CodeSnippet (syntax highlighted, read-only)
-│       │   └── Divider
-│       │   └── VersionLabel: "Theirs (incoming)"
+│       │   ├── Divider
+│       │   ├── VersionLabel: "Theirs (incoming)"
 │       │   └── CodeSnippet (syntax highlighted, read-only)
+│       ├── InlineMergeEditor (collapsible, hidden by default)
+│       │   ├── Tri-pane: Ours (top) / Merged (middle, editable) / Theirs (bottom)
+│       │   ├── AcceptOursButton → copies ours into merged pane
+│       │   ├── AcceptTheirsButton → copies theirs into merged pane
+│       │   └── SaveResolvedButton → marks file as resolved with merged content
 │       └── Actions
+│           ├── ExpandMergeEditorButton → opens InlineMergeEditor
 │           ├── AcceptOursButton
 │           ├── AcceptTheirsButton
 │           └── EditManuallyButton → opens PAGE-002 with conflict markers
-└── FloatingActionButton
-    └── "Mark All Resolved & Commit" (enabled when all files resolved)
+├── FloatingActionButton
+│   └── "Mark All Resolved & Commit" (enabled when all files resolved)
+├── (Novice help)
+│   └── InfoBanner (collapsible): "New to merge conflicts?" + "Learn more" link → in-app guide
 ```
+- **InlineMergeEditor** allows resolving conflicts without leaving the page
+- **Auto-resolve:** When Ours or Theirs is accepted, merged pane pre-fills with that version
+- **Resolved state:** File card shows green checkmark, collapse merge editor
 
 ---
 
@@ -614,33 +685,49 @@ ExportPage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Title: "Export"
 │   └── Actions: [CancelButton]
-└── Body (CustomScrollView)
-    ├── SliverToBoxAdapter
-    │   └── DocumentSummaryCard
-    │       ├── Title: doc.title
-    │       ├── Subtitle: "{n} words · {m} characters"
-    │       └── Thumbnail (first 5 lines of markdown, truncated)
-    ├── SliverToBoxAdapter
-    │   └── SectionHeader("Format")
-    ├── SliverToBoxAdapter
-    │   └── FormatPicker (2×2 grid)
-    │       ├── FormatCard("PDF", icon: doc.text.fill)
-    │       │   └── selected: coral border overlay
-    │       ├── FormatCard("HTML", icon: globe)
-    │       ├── FormatCard("DOCX", icon: doc.richtext)
-    │       └── FormatCard("TXT", icon: doc.plaintext)
-    ├── SliverToBoxAdapter
-    │   └── SectionHeader("Destination")
-    ├── SliverToBoxAdapter
-    │   └── DestinationPicker (2×2 grid)
-    │       ├── DestCard("Local Save", icon: folder)
-    │       ├── DestCard("Share", icon: square.and.arrow.up)
-    │       ├── DestCard("iCloud", icon: cloud) (iOS only)
-    │       └── DestCard("Google Drive", icon: cloud.fill) (conditional)
-    └── SliverToBoxAdapter
-        └── ExportButton (full-width, disabled until format + dest selected)
-            └── onTap: → PAGE-016 (or return to editor if in progress)
+├── Body (CustomScrollView)
+│   ├── Loading: skeleton (summary card block + 4 format card blocks + 4 dest card blocks)
+│   ├── Error: error-state "Could not load document" + retry + "Return to editor"
+│   └── Data:
+│       ├── SliverToBoxAdapter
+│       │   └── DocumentSummaryCard
+│       │       ├── Title: doc.title
+│       │       ├── Subtitle: "{n} words · {m} characters"
+│       │       └── Thumbnail (first 5 lines of markdown, truncated)
+│       ├── SliverToBoxAdapter
+│       │   └── SectionHeader("Format")
+│       ├── SliverToBoxAdapter
+│       │   └── FormatPicker (2×2 grid)
+│       │       ├── FormatCard("PDF", icon: doc.text.fill)
+│       │       │   ├── Description: "Page layout preserved"
+│       │       │   └── selected: coral border overlay
+│       │       ├── FormatCard("HTML", icon: globe)
+│       │       │   ├── Description: "Web-ready, no styling loss"
+│       │       │   └── selected: coral border overlay
+│       │       ├── FormatCard("DOCX", icon: doc.richtext)
+│       │       │   ├── Description: "Microsoft Word compatible"
+│       │       │   └── selected: coral border overlay
+│       │       └── FormatCard("TXT", icon: doc.plaintext)
+│       │           ├── Description: "Plain text, markdown stripped"
+│       │           └── selected: coral border overlay
+│       ├── SliverToBoxAdapter
+│       │   └── SectionHeader("Destination")
+│       ├── SliverToBoxAdapter
+│       │   └── DestinationPicker (2×2 grid)
+│       │       ├── DestCard("Local Save", icon: folder)
+│       │       ├── DestCard("Share", icon: square.and.arrow.up)
+│       │       ├── DestCard("iCloud", icon: cloud) (iOS only)
+│       │       └── DestCard("Google Drive", icon: cloud.fill) (conditional)
+│       └── SliverToBoxAdapter
+│           └── ExportButton (full-width, disabled until format + dest selected)
+│               └── onTap: ExportConfirmation dialog → "Export as {format} to {destination}?"
+│                   ├── Summary: "{title} · {n} words"
+│                   ├── CancelButton, ConfirmExportButton
+│                   └── onConfirm: → PAGE-016
 ```
+- **Loading state:** Document not yet loaded from drift; show skeleton
+- **Error state:** Document deleted or inaccessible
+- **Double-tap guard:** ExportButton disabled immediately after first tap, re-enabled on error
 
 ---
 
@@ -659,12 +746,20 @@ ExportFormatPage (ConsumerWidget)
 ├── Body (Padding)
 │   └── FormatPicker (2×2 grid)
 │       ├── FormatCard("PDF", icon: doc.text.fill)
+│       │   ├── Description: "Page layout preserved, best for printing"
+│       │   ├── InfoIcon (i.circle, onTap: tooltip "Uses pdf_gen package, supports embedded fonts")
 │       │   └── selected: coral border overlay + checkmark
 │       ├── FormatCard("HTML", icon: globe)
+│       │   ├── Description: "Web-ready, no styling loss"
+│       │   ├── InfoIcon (onTap: tooltip "Exports as standalone .html with inline CSS")
 │       │   └── selected: coral border overlay + checkmark
 │       ├── FormatCard("DOCX", icon: doc.richtext)
+│       │   ├── Description: "Microsoft Word compatible"
+│       │   ├── InfoIcon (onTap: tooltip "Uses open XML format; tables and images supported")
 │       │   └── selected: coral border overlay + checkmark
 │       └── FormatCard("TXT", icon: doc.plaintext)
+│           ├── Description: "Plain text, markdown stripped"
+│           ├── InfoIcon (onTap: tooltip "Strips all formatting; retains line breaks")
 │           └── selected: coral border overlay + checkmark
 └── BottomNavigationBar
     └── ContinueButton (disabled until format selected)
@@ -700,8 +795,12 @@ ExportDestinationPage (ConsumerWidget)
 │           ├── Description: "Upload to Google Drive"
 │           └── selected: coral border overlay
 └── BottomNavigationBar
-    └── ExportButton (disabled until destination + format selected)
-        └── onTap: → PAGE-016
+    └── ContinueButton (disabled until destination selected)
+        ├── Label: "Export as {format}" (dynamic, shows selected format)
+        └── onTap: 
+            ├── If destination requires auth (iCloud, Google Drive) and not authenticated:
+            │   └── Show AuthGate sheet: "Sign in to {destination}" with SignInButton
+            └── If authenticated → PAGE-016
 ```
 
 ---
@@ -718,18 +817,56 @@ ExportProgressPage (ConsumerStatefulWidget)
 │   ├── Title: "Exporting..."
 │   └── Actions: [CancelButton (aborts Isolate)]
 ├── Body (Column, centered)
-│   ├── Icon (animated document with gear, looped rotation)
-│   ├── ProgressBar (determinate)
-│   │   └── fill width = progress * 100%
-│   ├── PhaseLabel ("Parsing Markdown..." / "Converting..." / "Saving...")
-│   ├── ProgressPercentage ("{n}%")
-│   └── CancelButton (text, "Cancel")
-└── (Completion → pushed to native share sheet or saved locally)
-    ├── "Export Complete!" checkmark animation
-    └── SecondaryButton: "Open File" / "Share Again"
+│   ├── [State: converting]
+│   │   ├── Icon (animated document with gear, looped rotation)
+│   │   ├── ProgressBar (determinate)
+│   │   │   └── fill width = progress * 100%
+│   │   ├── PhaseLabel ("Parsing Markdown..." / "Converting..." / "Saving...")
+│   │   ├── ProgressPercentage ("{n}%")
+│   │   └── CancelButton (text, "Cancel")
+│   ├── [State: conversion_error]
+│   │   └── ErrorState
+│   │       ├── Icon (exclamationmark.triangle)
+│   │       ├── Title: "Conversion Failed"
+│   │       ├── Message: "Could not convert to {format}. {detail}"
+│   │       ├── Detail examples:
+│   │       │   ├── "The document contains unsupported LaTeX in the PDF renderer."
+│   │       │   ├── "A table with merged cells could not be converted to DOCX."
+│   │       │   └── "An image in the document could not be processed."
+│   │       ├── RetryButton → re-starts conversion
+│   │       └── FallbackButton "Save as TXT instead" → re-starts export as TXT
+│   ├── [State: upload_error]
+│   │   └── ErrorState
+│   │       ├── Title: "Upload Failed"
+│   │       ├── Message: "Could not upload to {destination}. {reason}"
+│   │       ├── Reason examples:
+│   │       │   ├── "Google Drive session expired. Please sign in again."
+│   │       │   ├── "iCloud Drive is not available on this device."
+│   │       │   └── "Network connection lost during upload."
+│   │       ├── RetryButton → re-attempts upload
+│   │       └── FallbackButton "Save locally instead" → saves to app sandbox
+│   ├── [State: timeout]
+│   │   └── ErrorState
+│   │       ├── Title: "Export Timed Out"
+│   │       ├── Message: "The export took longer than expected. This may happen with very large documents."
+│   │       ├── RetryButton → re-starts conversion
+│   │       └── FallbackButton "Export in smaller sections" → opens editor split guidance
+│   ├── [State: storage_full]
+│   │   └── ErrorState
+│   │       ├── Title: "Not Enough Storage"
+│   │       ├── Message: "There isn't enough free space to save this file. Free up space or choose a different destination."
+│   │       ├── StorageInfo: "Available: {n} MB, Required: {n} MB"
+│   │       └── DismissButton → returns to export hub (PAGE-013)
+│   └── [State: complete]
+│       ├── "Export Complete!" checkmark animation
+│       ├── OpenFileButton → opens file in system viewer
+│       └── ShareAgainButton → re-opens share sheet with same file
 ```
 - **Determinate mode:** Parsing (0-25%), Converting (25-80%), Rendering (80-95%), Finalizing (95-100%)
 - **Double-tap guard:** ExportButton disabled immediately after first tap, re-enabled on error/cancel
+- **Cancel behavior:** Aborts Isolate, navigates back to PAGE-013 with SnackBar "Export cancelled"
+- **Cancel confirmation:** If export > 50% complete, shows dialog: "Cancel export? {n}% done." with "Wait" and "Cancel" buttons
+- **Timeout threshold:** 120 seconds for conversion; 60 seconds for upload
 
 ---
 
@@ -783,7 +920,13 @@ ModelManagerPage (ConsumerStatefulWidget)
 │   │   └── ModeToggleCard
 │   │       ├── Label: "AI Mode"
 │   │       ├── SegmentedControl(Free / Custom)
-│   │       └── Description: Free = one model for all tasks, Custom = per-task model routing
+│   │       ├── Description: Free = one model for all tasks, Custom = per-task model routing
+│   │       └── onSwitch: show ModeSwitchConfirmation
+│   │           └── ModeSwitchConfirmation (BottomSheet):
+│   │               ├── Switched from {old} to {new}
+│   │               ├── Explanation of what changes (model routing, available settings)
+│   │               ├── "Switch" confirm button
+│   │               └── "Cancel" button
 │   ├── SliverToBoxAdapter
 │   │   └── SectionHeader("Providers")
 │   ├── SliverList
@@ -820,37 +963,43 @@ ModelManagerPage (ConsumerStatefulWidget)
 ### Widget Tree
 
 ```
-UsageDashboardPage (ConsumerWidget)
+UsageDashboardPage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Leading: BackButton
 │   ├── Title: "Usage"
 │   └── Actions: [ExportCsvButton]
 ├── Body (CustomScrollView)
-│   ├── SliverToBoxAdapter
-│   │   └── UsageSummaryRow
-│   │       ├── MetricCard("Today", tokenCount, cost)
-│   │       ├── MetricCard("This Week", tokenCount, cost)
-│   │       └── MetricCard("This Month", tokenCount, cost)
-│   ├── SliverToBoxAdapter
-│   │   └── SectionHeader("Daily Usage (Last 30 Days)")
-│   ├── SliverToBoxAdapter
-│   │   └── BarChart (fl_chart)
-│   │       ├── X-axis: dates (every 5 days labeled)
-│   │       ├── Y-axis: token count
-│   │       └── Bar color: coral → blue gradient
-│   ├── SliverToBoxAdapter
-│   │   └── SectionHeader("Breakdown")
-│   ├── SliverToBoxAdapter
-│   │   └── BreakdownTabs (SegmentedControl: By Model / By Agent / By Task)
-│   ├── SliverToBoxAdapter
-│   │   └── PieChart (fl_chart, per selected breakdown)
-│   ├── SliverToBoxAdapter
-│   │   └── SectionHeader("Alerts")
-│   └── SliverToBoxAdapter
-│       └── AlertConfigCard
-│           ├── HardCapRow: Switch + TextField("${threshold}")
-│           ├── SoftCapRow: Switch + Slider(50-95%)
-│           └── ResetButton("Reset monthly counters")
+│   ├── Loading: skeleton (3 metric cards + bar chart block + pie chart block)
+│   ├── Empty: empty-state "No usage data yet" + "Usage tracking starts when you send your first message"
+│   ├── Error: error-state with retry
+│   └── Data:
+│       ├── SliverToBoxAdapter
+│       │   └── UsageSummaryRow
+│       │       ├── MetricCard("Today", tokenCount, cost, onTap: tooltip "Tokens used today across all tasks")
+│       │       ├── MetricCard("This Week", tokenCount, cost, onTap: tooltip "7-day rolling window")
+│       │       └── MetricCard("This Month", tokenCount, cost, onTap: tooltip "Current billing cycle")
+│       ├── SliverToBoxAdapter
+│       │   └── SectionHeader("Daily Usage (Last 30 Days)")
+│       ├── SliverToBoxAdapter
+│       │   ├── [has data]: BarChart (fl_chart)
+│       │   │   ├── X-axis: dates (every 5 days labeled)
+│       │   │   ├── Y-axis: token count
+│       │   │   └── Bar color: coral → blue gradient
+│       │   └── [no data]: empty-state "No usage in this period"
+│       ├── SliverToBoxAdapter
+│       │   └── SectionHeader("Breakdown")
+│       ├── SliverToBoxAdapter
+│       │   └── BreakdownTabs (SegmentedControl: By Model / By Agent / By Task)
+│       ├── SliverToBoxAdapter
+│       │   ├── [has data]: PieChart (fl_chart, per selected breakdown)
+│       │   └── [no data]: empty-state "No breakdown data available"
+│       ├── SliverToBoxAdapter
+│       │   └── SectionHeader("Alerts")
+│       └── SliverToBoxAdapter
+│           └── AlertConfigCard
+│               ├── HardCapRow: Switch + TextField("${threshold}")
+│               ├── SoftCapRow: Switch + Slider(50-95%)
+│               └── ResetButton("Reset monthly counters")
 ```
 
 ---
@@ -862,20 +1011,28 @@ UsageDashboardPage (ConsumerWidget)
 ### Widget Tree
 
 ```
-CotProjectListPage (ConsumerWidget)
+CotProjectListPage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Title: "Chain of Truth"
-│   └── Actions: [NewProjectButton]
+│   └── Actions: [SearchButton, NewProjectButton]
+│       └── SearchButton → toggles SearchBar inline below AppBar
 ├── Body
+│   ├── SearchBar (visible when search active)
+│   │   ├── TextField (autofocus, placeholder: "Search projects...")
+│   │   ├── ClearButton
+│   │   └── Results: filters projects by name match (case-insensitive)
 │   ├── Loading: skeleton-card x 3
-│   ├── Empty: empty-state "No projects" + "Use Chain of Truth for structured document creation"
+│   ├── Empty (no projects): empty-state "No projects" + "Use Chain of Truth for structured document creation"
+│   ├── Empty (search no match): empty-state "No projects match '{query}'"
 │   ├── Error: error-state with retry
 │   └── Data: ListView
 │       └── CotProjectCard
 │           ├── Title: project.name
 │           ├── Subtitle: "{n} artifacts · updated {timeAgo}"
 │           ├── Trail: StatusBadge (Draft/In Review/Complete)
-│           └── onTap: → PAGE-021
+│           ├── onTap: → PAGE-021
+│           └── Swipe left: delete project
+│               └── Confirmation dialog: "Delete '{name}' and all artifacts?" + "This cannot be undone." + CancelButton + DeleteButton (destructive)
 ```
 
 ---
@@ -912,6 +1069,14 @@ CotArtifactEditorPage (ConsumerStatefulWidget)
 │           ├── TemplateSelector (top bar)
 │           │   └── Chip("Load {template} template")
 │           └── Editor (super_editor)
+└── (Undo tree — built into ArtifactEditorPanel)
+    └── UndoHistorySheet (triggered by button in editor toolbar)
+        ├── List of past edits with timestamps
+        ├── Tap any entry to preview that version (read-only overlay)
+        └── "Restore this version" → confirmation → replaces current content
+└── (Template overwrite guard)
+    └── When "Generate from template" is tapped with existing content:
+        └── Confirmation dialog: "Replace current content?" + "This replaces the artifact content with the template. You can undo this later." + "Replace" + "Append to bottom" + CancelButton
 └── FloatingActionButton
     └── "Generate from template" → inserts template content
 ```
@@ -931,7 +1096,11 @@ NotFoundPage (StatelessWidget)
 │   ├── Icon (questionmark.folder, size: 64, color: muted)
 │   ├── Text("Page Not Found", bold, 24)
 │   ├── Text("The page you're looking for doesn't exist.", muted)
-│   └── TextButton.icon(icon: house, label: "Go Home", onTap: → `/`)
+│   ├── RecoveryOptions (row, centered)
+│   │   ├── TextButton.icon(icon: house, label: "Go Home", onTap: → `/`)
+│   │   ├── TextButton.icon(icon: magnifying.glass, label: "Search", onTap: → search docs drawer)
+│   │   └── TextButton.icon(icon: clock, label: "Recent", onTap: → recent docs sheet)
+│   └── RecentPagesList (collapsed, max 5 items): recent documents with timestamps
 └── Animated: icon wobbles (rotate: -5° → 5°) on page load, settles to 0°
 ```
 
@@ -945,14 +1114,15 @@ NotFoundPage (StatelessWidget)
 ProfilePage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Leading: BackButton
+│   │   └── onPop: if hasUnsavedChanges → show "Discard changes?" dialog
 │   ├── Title: "Profile"
-│   └── Actions: [SaveButton]
+│   └── Actions: [SaveButton (disabled if no changes)]
 └── Body (Form)
     ├── AvatarPicker (circle avatar, tap to change from gallery)
     ├── NameField (TextFormField, "Display Name")
     ├── EmailField (TextFormField, "Email for Git commits")
     ├── SignatureField (TextFormField, "Default document signature")
-    └── SaveButton (disabled if no changes)
+    └── SaveButton (disabled if no changes, shows SnackBar "Profile saved" on success)
 ```
 
 ---
@@ -964,15 +1134,17 @@ ProfilePage (ConsumerStatefulWidget)
 ### Widget Tree
 
 ```
-AppearancePage (ConsumerWidget)
+AppearancePage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Leading: BackButton
 │   ├── Title: "Appearance"
 │   └── Actions: [ResetDefaultsButton]
-└── Body (ListView)
+│       └── onTap: ResetConfirmation dialog → "Reset all appearance settings to defaults?" + CancelButton + ResetButton
+├── Body (ListView)
     ├── SectionHeader("Theme")
     ├── ThemePicker (SegmentedControl: Light / Dark / System)
-    │   └── Live preview card showing current theme
+    │   ├── Live preview card showing current theme
+    │   └── System mode note: "Follows device theme" (shown only when System selected)
     ├── SectionHeader("Editor Font")
     ├── FontSizeSlider (12–24, step 2)
     │   └── Preview text showing current size
@@ -990,11 +1162,12 @@ AppearancePage (ConsumerWidget)
 ### Widget Tree
 
 ```
-EditorSettingsPage (ConsumerWidget)
+EditorSettingsPage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Leading: BackButton
 │   ├── Title: "Editor"
 │   └── Actions: [ResetDefaultsButton]
+│       └── onTap: ResetConfirmation dialog → "Reset all editor settings to defaults?" + CancelButton + ResetButton
 └── Body (ListView)
     ├── SwitchRow("Spell Check", icon: text.quote)
     ├── SwitchRow("Line Numbers", icon: number)
@@ -1022,14 +1195,20 @@ PrivacySecurityPage (ConsumerStatefulWidget)
 └── Body (ListView)
     ├── SectionHeader("App Lock")
     ├── SwitchRow("Require Auth to Open", icon: lock)
-    │   └── onToggle: biometric enrollment or PIN setup flow
+    │   └── onToggle: 
+    │       ├── If enabling → biometric enrollment or PIN setup flow
+    │       │   └── User cancels auth → switch reverts to off
+    │       └── If disabling → confirm current auth first
     ├── PickerRow("Auto-Lock Timer", options: [30s, 1m, 5m, Never])
+    │   └── visible only when auth enabled
+    ├── ActionRow("Lock Now", icon: lock.fill)
+    │   └── onTap: immediately lock app (require auth to resume)
     │   └── visible only when auth enabled
     ├── SectionHeader("Data")
     ├── ActionRow("Clear Export Cache", subtitle: "{n} MB", icon: trash)
     │   └── onTap: confirmation dialog → delete cache files
     └── ActionRow("Delete All Usage Data", icon: exclamationmark.triangle, destructive)
-        └── onTap: double-confirmation → truncate UsageRecords + ExportRecords
+        └── onTap: double-confirmation → "This deletes all usage records, export history, and token logs." + "Scope: {n} days of data" + CancelButton + DeleteButton
 ```
 
 ---
@@ -1041,23 +1220,35 @@ PrivacySecurityPage (ConsumerStatefulWidget)
 ### Widget Tree
 
 ```
-KeyboardShortcutsPage (ConsumerWidget)
+KeyboardShortcutsPage (ConsumerStatefulWidget)
 ├── AppBar
 │   ├── Leading: BackButton
 │   ├── Title: "Keyboard Shortcuts"
-└── Body (ListView)
-    ├── SectionHeader("Navigation")
-    ├── ShortcutRow("New Document", "Cmd + N")
-    ├── ShortcutRow("New Chat", "Cmd + Shift + N")
-    ├── ShortcutRow("Go to Home", "Cmd + 1")
-    ├── ShortcutRow("Go to Chat", "Cmd + 2")
-    ├── SectionHeader("Editing")
-    ├── ShortcutRow("Send Message", "Cmd + Return")
-    ├── ShortcutRow("Manual Save", "Cmd + S")
-    ├── ShortcutRow("Toggle Preview", "Cmd + P")
-    ├── SectionHeader("Actions")
-    ├── ShortcutRow("Export", "Cmd + E")
-    └── ShortcutRow("Search Documents", "Cmd + F")
+│   └── Actions: [SearchButton, CustomizeButton]
+│       ├── SearchButton → toggles inline search: "Search shortcuts..."
+│       └── CustomizeButton → opens ShortcutCustomizer sheet
+├── Body
+│   ├── SearchBar (visible when search active)
+│   │   ├── TextField (placeholder: "Search shortcuts...")
+│   │   └── Filters list to matching shortcut or action name
+│   └── ListView (filtered by search if active)
+│       ├── SectionHeader("Navigation")
+│       ├── ShortcutRow("New Document", "Cmd + N")
+│       ├── ShortcutRow("New Chat", "Cmd + Shift + N")
+│       ├── ShortcutRow("Go to Home", "Cmd + 1")
+│       ├── ShortcutRow("Go to Chat", "Cmd + 2")
+│       ├── SectionHeader("Editing")
+│       ├── ShortcutRow("Send Message", "Cmd + Return")
+│       ├── ShortcutRow("Manual Save", "Cmd + S")
+│       ├── ShortcutRow("Toggle Preview", "Cmd + P")
+│       ├── SectionHeader("Actions")
+│       ├── ShortcutRow("Export", "Cmd + E")
+│       └── ShortcutRow("Search Documents", "Cmd + F")
+└── ShortcutCustomizer (BottomSheet, triggered by CustomizeButton)
+    ├── List of all shortcuts (key + action pairs)
+    ├── Tap any shortcut → record next keypress to rebind
+    ├── "Reset to defaults" button
+    └── Close button
 ```
 
 ---
@@ -1089,18 +1280,20 @@ AboutPage (StatelessWidget)
 
 | DESIGN.md Component | Used In |
 |---------------------|---------|
-| `card` | ProviderCard, RepoListItem, ConflictFileCard, MetricCard |
-| `skeleton-block` | All loading states |
-| `empty-state` | All empty states |
-| `error-state` | All error states |
-| `progress-bar` | PAGE-016, PAGE-009 (PushPullDialog) |
-| `form-error-text` | PAGE-018 (API key validation), CommitMessageField |
-| `text-input-error` | PAGE-018 error state |
-| `badge` / `badge-warning` | TaskTypeBadge, StatusBadge, UnpushedBadge |
-| `overlay` / `overlay-lift` | PreviewPane on phone, ToolExecutionConfirmation |
+| `skeleton-block` / `skeleton-card` | All loading states |
+| `empty-state` / `empty-state-action` | All empty states |
+| `error-state` / `error-state-retry` | All error states |
+| `progress-bar-track` / `progress-bar-fill` | PAGE-016, PAGE-009 (PushPullDialog) |
 | `button-primary` | SendButton, ExportButton, CommitButton, CreateButton |
-| `button-destructive` | DeleteProviderButton, DiscardButton |
-| `logo` | App bar (future: OpenAI/Anthropic provider logos) |
+| `button-secondary` | CancelButton, BackButton variants |
+| `button-legal` | Cookie consent, destructive confirmations |
+| `text-input` / `text-input-focus` | ChatInputBar, CommitMessageField, profile fields |
+| `form-error-text` | PAGE-018 (API key validation), CommitMessageField |
+| `text-link` | "Learn more" links, "Go Home" on 404 |
+| `signature-coral-card` | ProviderCard usage highlight |
+| `demo-grid-card` | FormatPicker, DestinationPicker, Templates |
+| `article-card` | ChatSessionItem, DocumentListItem |
+| `topic-filter-rail` | Agent selector sidebar (tablet) |
 
 ## 33. Animation & Transition Spec
 
@@ -1123,17 +1316,24 @@ AboutPage (StatelessWidget)
 
 ## 34. Responsive Breakpoints
 
+**Note:** The prototype.md breakpoints (app-native Flutter) differ from DESIGN.md breakpoints (marketing-site web). DESIGN.md uses 768/1024/1440 for responsive web layout; prototype.md uses 600/840 for native mobile/tablet layout. These serve different contexts and are intentionally not reconciled.
+
 | Breakpoint | Layout | Notes |
 |------------|--------|-------|
 | < 600dp | Phone single-column | Bottom nav, overlay preview, full-width lists |
 | 600-840dp | Small tablet 2-column | Side-by-side editor, 2-column agent grid |
 | > 840dp | Large tablet 2-column + sidebar | Max-width centered content (720px lists), 4-column grids |
+| Orientation change | Portrait ↔ Landscape | Editor: AnimatedSwitcher (phone) ↔ Row (phone landscape/tablet) |
 
 ## 35. Accessibility Notes
 
 - All icons paired with `Semantics` labels
-- Minimum tap target: 44×44dp
+- Minimum tap target: 44×44dp (WCAG AAA)
 - Streaming text supports `AccessibilityFeatures.accessibleNavigation` → skip typewriter, show full text
 - All buttons support `onLongPress` for tooltip
 - Keyboard shortcuts (iPad): `Cmd+N` new doc, `Cmd+Shift+N` new chat, `Cmd+Return` send, `Cmd+E` export, `Cmd+S` manual save
 - Color contrast ratios: minimum 4.5:1 for text, 3:1 for large text + UI components (per WCAG AA)
+- **Focus indicators:** All interactive elements show visible focus ring (2px offset outline) in high-contrast mode
+- **Form validation:** Error messages linked to inputs via `Semantics` error label; screen reader announces "Error: {message}" on focus
+- **Reduced motion:** Respects `AccessibilityFeatures.disableAnimations` — all animations (stagger, typewriter, scale) disabled; instant transitions used instead
+- **Platform a11y:** Android `contentDescription`, iOS `accessibilityLabel` on all semantic elements; `MergeSemantics` for grouped controls (e.g., FormatToolbar)
