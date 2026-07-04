@@ -91,7 +91,7 @@
 
 | Page ID | Page Name | Role in This Flow |
 |---------|-----------|-------------------|
-| PAGE-022 | Settings | Main settings hub |
+| PAGE-017 | Settings | Main settings hub |
 | PAGE-023 | Profile | User profile details |
 | PAGE-024 | Appearance | Theme, font, code theme |
 | PAGE-025 | Editor Settings | Spell check, line numbers, defaults |

@@ -9,15 +9,16 @@
 | Use Case ID | UC-005 |
 | Name | Git Operations |
 | Actor | Programmer user |
-| Goal | Perform Git version control operations on documents (init, stage, commit, diff, log, push, pull) using git2dart library |
-| Trigger | User opens Git panel from editor or home screen |
+| Goal | Perform Git version control operations across multiple repositories (switch, init, stage, commit, diff, log, push, pull) using git2dart library. Repo switching follows the GitHub Desktop pattern — default to the last-opened repo with a dropdown switcher. |
+| Trigger | User taps Git tab in bottom navigation, taps "Open Repo" from home, or selects repo from AppBar switcher dropdown |
 | Preconditions | - App storage is accessible- git2dart library is initialized |
 
-## Main Flow
+## Main Flow: View Repo Status
 
-1. User taps Git button → Git panel opens showing current repo status
-2. System scans working directory for .git
-3. If repo exists: show status — modified files, staged files, branch name, unpushed commits
+1. User taps Git tab → System checks `UserProfile.lastRepoId`
+2a. **If last repo exists:** Opens PAGE-009 showing that repo's status directly (skips list)
+2b. **If no repos exist:** Opens PAGE-008 (Manage Repositories) with empty state
+3. System loads repo status via git2dart: modified files, staged files, branch name, unpushed commits
 4. System lists modified files with diff preview
 5. User can tap individual files to view diff (side-by-side or unified)
 6. User selects files to stage (checkbox per file)
@@ -30,7 +31,25 @@
 
 ## Alternative Flows
 
-### Alt-1: Initialize New Repo
+### Alt-1: Switch Repository via Dropdown
+**Trigger:** User taps repo name in AppBar title area
+
+1. System shows RepoSwitcherDropdown with all repositories
+2. Current repo shown first with checkmark, sorted by last-opened date
+3. Recent repos listed below
+4. User taps different repo → System switches PAGE-009 to show that repo's status
+5. `UserProfile.lastRepoId` updated to new repo
+6. **Outcome:** Status view switches to selected repo without navigation stack pushing
+
+### Alt-2: Open Manage Repositories
+**Trigger:** User taps "Manage Repositories..." in switcher dropdown, or no repos exist
+
+1. PAGE-008 opens showing full repository list
+2. User can init local repo, clone remote repo, or open existing folder
+3. User taps a repo → System sets it as active, navigates to PAGE-009
+4. **Outcome:** Returns to status view with new repo active
+
+### Alt-3: Initialize New Repo
 **Trigger:** User taps "Init Repo" when no .git found
 
 1. System shows confirmation: "Initialize a git repo in this directory?"
@@ -93,11 +112,11 @@
 
 | Page ID | Page Name | Role in This Flow |
 |---------|-----------|-------------------|
-| PAGE-008 | Git Repo List | Repository list and status |
-| PAGE-009 | Git Repo Detail | Per-repo status, branch, log |
-| PAGE-010 | Git Commit | Commit creation with file staging |
-| PAGE-011 | Git Diff | Diff viewer per file |
-| PAGE-012 | Git Log | Commit history viewer |
+| PAGE-008 | Git Repo List (Manage) | Full repo list with init/clone, entry via switcher dropdown |
+| PAGE-009 | Git Status | Default Git view — status with repo switcher dropdown in AppBar |
+| PAGE-010 | Git Diff | Diff viewer per file |
+| PAGE-011 | Git Commit | Commit creation with file staging |
+| PAGE-012 | Git Conflict | Conflict resolution UI |
 
 ## Data Used
 
@@ -108,12 +127,18 @@
 
 ## Acceptance Criteria
 
+- [ ] Git tab defaults to last-opened repo status (PAGE-009) when repos exist
+- [ ] Git tab shows empty repo management page (PAGE-008) when no repos exist
+- [ ] Repo switcher dropdown shows all repos with current repo highlighted
+- [ ] Selecting a repo from the dropdown switches status view without navigation push
+- [ ] "Manage Repositories..." in dropdown opens full repo list
 - [ ] User can init a new repo
 - [ ] User can stage, commit, view diff, and view log
 - [ ] User can push to and pull from remote
 - [ ] Merge conflicts show resolution options
 - [ ] Auth failure shows credential entry dialog
 - [ ] Progress indicator shown during network operations
+- [ ] `UserProfile.lastRepoId` persists across app restarts
 
 ## Traceability
 

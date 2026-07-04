@@ -89,10 +89,8 @@
 | Page ID | Page Name | Role in This Flow |
 |---------|-----------|-------------------|
 | PAGE-018 | Model Manager | Main configuration page |
-| PAGE-019 | Provider Detail | Per-provider API key and model settings |
-| PAGE-020 | Task Model Mapping | Per-task model routing (Custom mode) |
-| PAGE-021 | Usage Analytics | Usage history, charts, and breakdowns |
-| PAGE-022 | Settings | Entry point and mode toggle |
+| PAGE-018 | Model Manager | Provider list and mode toggle |
+| PAGE-019 | Usage Dashboard | Usage history, charts, and breakdowns |
 
 ## Data Used
 

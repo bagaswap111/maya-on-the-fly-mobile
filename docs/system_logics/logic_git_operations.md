@@ -10,12 +10,24 @@ Execute Git version control operations via git2dart (libgit2 FFI) for repository
 
 | Input | Source | Type | Description |
 |-------|--------|------|-------------|
-| Operation type | Git panel | Enum (init/status/add/commit/diff/log/push/pull) | Requested operation |
+| Operation type | Git panel | Enum (init/status/add/commit/diff/log/push/pull/switch) | Requested operation |
 | Target repo | Git panel | String | Repository path in app sandbox |
 | Parameters | Git panel | Map | Varies by operation (files, message, remote URL) |
 | Credentials | Secure storage | GitCredential | SSH key or PAT for remote operations |
+| LastRepoId | UserProfile | String? | Persisted ID of the last viewed repo, used for Git tab entry |
 
 ## Processing Steps
+
+### Step 0: Determine Entry View
+1. Git tab opened → check `UserProfile.lastRepoId`
+2. If lastRepoId is set and repo record exists:
+   - Load repo metadata from drift
+   - Open PAGE-009 directly (skip PAGE-008)
+   - Proceed to Step 2 for status
+3. If no repos exist at all:
+   - Query `SELECT COUNT(*) FROM Repositories`
+   - If count == 0: show PAGE-008 (empty state with init/clone CTAs)
+4. **Outcome:** User lands on the most relevant view without extra navigation
 
 ### Step 1: Load Repository
 1. Check if Repository record exists in drift for the working directory
@@ -24,6 +36,13 @@ Execute Git version control operations via git2dart (libgit2 FFI) for repository
 4. If found: load branch name, remote URL, recent commit into memory
 
 ### Step 2: Execute Operation
+
+#### switch (repo selection)
+1. Called when user selects a different repo from the AppBar switcher dropdown
+2. Update `UserProfile.lastRepoId = newRepoId` in drift
+3. Re-query status for the newly selected repo
+4. PAGE-009 rebuilds with new repo data (no navigation stack change)
+5. Return new repo status result
 
 #### init
 1. Call `Repository.init(path)` via git2dart
@@ -100,6 +119,12 @@ Execute Git version control operations via git2dart (libgit2 FFI) for repository
 ## Flow Diagram (text)
 
 ```
+Git tab opened → Check UserProfile.lastRepoId
+                    ├── Has value → PAGE-009 (status + switcher)
+                    └── No repos → PAGE-008 (manage/init/clone)
+
+User selects repo from switcher → Update lastRepoId → Rebuild PAGE-009
+
 User selects operation → Load Repository (git2dart)
                               ↓
                      ┌────────┴────────┐

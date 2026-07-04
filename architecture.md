@@ -468,7 +468,7 @@ Maya on the Fly
 | PAGE-005 | Chat List | /chat | Local | Chat |
 | PAGE-006 | Chat Conversation | /chat/:id | Local | Chat |
 | PAGE-007 | New Chat | /chat/new | Local | Chat |
-| PAGE-008 | Git Repo List | /git | Local | Git |
+| PAGE-008 | Git Repo List | /git/manage | Local | Git |
 | PAGE-009 | Git Status | /git/:repo | Local | Git |
 | PAGE-010 | Git Diff | /git/:repo/diff | Local | Git |
 | PAGE-011 | Git Commit | /git/:repo/commit | Local | Git |
@@ -483,6 +483,12 @@ Maya on the Fly
 | PAGE-020 | CoT Project List | /cot | Local | CoT |
 | PAGE-021 | CoT Artifact Editor | /cot/:project | Local | CoT |
 | PAGE-022 | 404 | * | Local | System |
+| PAGE-023 | Profile | /settings/profile | Local | Settings |
+| PAGE-024 | Appearance | /settings/appearance | Local | Settings |
+| PAGE-025 | Editor Settings | /settings/editor | Local | Settings |
+| PAGE-026 | Privacy & Security | /settings/privacy | Local | Settings |
+| PAGE-027 | Keyboard Shortcuts | /settings/shortcuts | Local | Settings |
+| PAGE-028 | About | /settings/about | Local | Settings |
 
 ### 3.6 Page Definitions
 
@@ -540,18 +546,219 @@ Maya on the Fly
 - **Related use cases:** UC-007
 - **Related features:** F008
 
+#### PAGE-003: New Document
+- **Route:** /doc/new
+- **Access:** Local
+- **Purpose:** Create a new document from a template or blank slate
+- **Key UI elements:** Template carousel (Blank, Research Paper, Business Proposal, Meeting Notes, Technical Spec), Create button
+- **Primary actions:** Select template, create document
+- **Related use cases:** UC-003
+- **Related features:** F005
+
+#### PAGE-004: Full Preview
+- **Route:** /doc/:id/preview
+- **Access:** Local
+- **Purpose:** Full-screen read-only preview of rendered Markdown with pinch-to-zoom
+- **Key UI elements:** InteractiveViewer, flutter_markdown renderer, share/export buttons
+- **Primary actions:** Preview, share, export
+- **Related use cases:** UC-003
+- **Related features:** F005
+
+#### PAGE-005: Chat List
+- **Route:** /chat
+- **Access:** Local
+- **Purpose:** List of recent AI chat sessions
+- **Key UI elements:** ChatSessionItem (agent avatar, title, timestamp, token badge), new chat button, empty state
+- **Primary actions:** Tap to resume chat, create new chat
+- **Related use cases:** UC-001
+- **Related features:** F001
+
+#### PAGE-007: New Chat
+- **Route:** /chat/new
+- **Access:** Local
+- **Purpose:** Create a new chat session with agent selection
+- **Key UI elements:** AgentGrid (13 agent cards with avatar, name, description, tool count), quick prompt chips
+- **Primary actions:** Select agent, start chat
+- **Related use cases:** UC-001
+- **Related features:** F001, F002
+
+#### PAGE-008: Git Repo List
+- **Route:** /git
+- **Access:** Local
+- **Purpose:** List of Git repositories in app sandbox
+- **Key UI elements:** RepoListItem (name, path, branch, unpushed badge), init/clone buttons
+- **Primary actions:** Open repo, init new, clone remote
+- **Related use cases:** UC-005
+- **Related features:** F006
+
+#### PAGE-009: Git Status
+- **Route:** /git/:repo (default view when Git tab opened with existing repos)
+- **Access:** Local
+- **Purpose:** Repository status showing changed files with staging and commit
+- **Key UI elements:** RepoSwitcherDropdown (title area), branch chip, remote info, FileStatusItem list with stage checkboxes, commit button, push/pull buttons
+- **Primary actions:** Switch repo via dropdown, stage/unstage, commit, push, pull, manage repos
+- **Related use cases:** UC-005
+- **Related features:** F006
+
+#### PAGE-010: Git Diff
+- **Route:** /git/:repo/diff
+- **Access:** Local
+- **Purpose:** Side-by-side or unified diff viewer for changed files
+- **Key UI elements:** DiffSummaryBar (additions/deletions, unified/split toggle), DiffHunk list with line numbers and gutter indicators
+- **Primary actions:** View diff, stage/unstage from diff view
+- **Related use cases:** UC-005
+- **Related features:** F006
+
+#### PAGE-011: Git Commit
+- **Route:** /git/:repo/commit
+- **Access:** Local
+- **Purpose:** Commit staged changes with message
+- **Key UI elements:** Commit message field, staged file list, diff preview, conventional commit chips (feat/fix/docs)
+- **Primary actions:** Enter message, commit
+- **Related use cases:** UC-005
+- **Related features:** F006
+
+#### PAGE-012: Git Conflict
+- **Route:** /git/:repo/conflict
+- **Access:** Local
+- **Purpose:** Merge conflict resolution interface
+- **Key UI elements:** ConflictFileCard (ours/theirs code snippets), AcceptOurs/AcceptTheirs/EditManually buttons
+- **Primary actions:** Resolve conflicts, mark resolved
+- **Related use cases:** UC-005
+- **Related features:** F006
+
+#### PAGE-014: Export Format
+- **Route:** /export/:docId/format
+- **Access:** Local
+- **Purpose:** Select output format for document export
+- **Key UI elements:** FormatPicker grid (PDF, HTML, DOCX, TXT) with selected state overlay
+- **Primary actions:** Select format, proceed to destination
+- **Related use cases:** UC-004
+- **Related features:** F007
+
+#### PAGE-015: Export Destination
+- **Route:** /export/:docId/destination
+- **Access:** Local
+- **Purpose:** Select destination for exported file
+- **Key UI elements:** DestinationPicker grid (Local, Share, iCloud, Google Drive)
+- **Primary actions:** Select destination, start export
+- **Related use cases:** UC-004
+- **Related features:** F007
+
+#### PAGE-016: Export Progress
+- **Route:** /export/:docId/progress
+- **Access:** Local
+- **Purpose:** Show export conversion progress
+- **Key UI elements:** Progress bar with phase labels, cancel button, completion animation
+- **Primary actions:** Cancel export, view completion
+- **Related use cases:** UC-004
+- **Related features:** F007
+
+#### PAGE-017: Settings
+- **Route:** /settings
+- **Access:** Local
+- **Purpose:** Main settings hub with sectioned list
+- **Key UI elements:** ListTile groups (Profile, AI Configuration, Appearance, Editor, Privacy, About)
+- **Primary actions:** Navigate to sub-settings pages
+- **Related use cases:** UC-007
+- **Related features:** F008
+
+#### PAGE-020: CoT Project List
+- **Route:** /cot
+- **Access:** Local
+- **Purpose:** List of Chain of Truth projects
+- **Key UI elements:** CotProjectCard (name, artifact count, status badge), new project button
+- **Primary actions:** Open project, create new
+- **Related use cases:** UC-003
+- **Related features:** F010
+
+#### PAGE-021: CoT Artifact Editor
+- **Route:** /cot/:project
+- **Access:** Local
+- **Purpose:** Edit Chain of Truth artifacts with tree navigation and template support
+- **Key UI elements:** Artifact tree panel, Markdown editor, template selector, generate button
+- **Primary actions:** Navigate artifacts, edit content, generate from template
+- **Related use cases:** UC-003
+- **Related features:** F010
+
+#### PAGE-022: 404
+- **Route:** *
+- **Access:** Local
+- **Purpose:** Catch-all not-found page
+- **Key UI elements:** Question mark icon, "Page Not Found" message, "Go Home" link
+- **Primary actions:** Navigate home
+
+#### PAGE-023: Profile
+- **Route:** /settings/profile
+- **Access:** Local
+- **Purpose:** User profile details (name, default author info)
+- **Key UI elements:** Text fields for name, email, default signature
+- **Primary actions:** Edit and save profile
+- **Related use cases:** UC-007
+- **Related features:** F008
+
+#### PAGE-024: Appearance
+- **Route:** /settings/appearance
+- **Access:** Local
+- **Purpose:** Theme selection (light/dark/system), font size, code block theme
+- **Key UI elements:** Theme picker, font size slider, code theme selector
+- **Primary actions:** Select theme, adjust font
+- **Related use cases:** UC-007
+- **Related features:** NFR-004
+
+#### PAGE-025: Editor Settings
+- **Route:** /settings/editor
+- **Access:** Local
+- **Purpose:** Editor preferences (spell check, line numbers, tab size, export defaults)
+- **Key UI elements:** Switches, segmented controls, format/destination picker for defaults
+- **Primary actions:** Toggle settings, set export defaults
+- **Related use cases:** UC-007
+- **Related features:** F005
+
+#### PAGE-026: Privacy & Security
+- **Route:** /settings/privacy
+- **Access:** Local
+- **Purpose:** App lock, auto-lock timer, data management
+- **Key UI elements:** Biometric/PIN toggle, auto-lock timer picker, clear cache button
+- **Primary actions:** Enable auth, clear cache
+- **Related use cases:** UC-007
+- **Related features:** NFR-003
+
+#### PAGE-027: Keyboard Shortcuts
+- **Route:** /settings/shortcuts
+- **Access:** Local
+- **Purpose:** iPad keyboard shortcut configuration
+- **Key UI elements:** Shortcut list with key combination display
+- **Primary actions:** View and customize shortcuts
+- **Related use cases:** UC-007
+- **Related features:** F005 (iPad support)
+
+#### PAGE-028: About
+- **Route:** /settings/about
+- **Access:** Local
+- **Purpose:** App version, licenses, changelog
+- **Key UI elements:** Version string, license list, changelog
+- **Primary actions:** View licenses, check version
+- **Related use cases:** UC-007
+
 ### 3.7 User Navigation Flows
 
 | From Page | To Page | Trigger | Notes |
 |-----------|---------|---------|-------|
 | PAGE-001 | PAGE-002 | Tap recent document | Opens document in editor |
 | PAGE-001 | PAGE-006 | Tap recent chat | Restores chat history |
+| PAGE-001 | PAGE-005 | Tap "See All" on chats section | Opens full chat list |
 | PAGE-001 | PAGE-003 | Tap "New Doc" quick action | Creates blank document |
+| PAGE-005 | PAGE-006 | Tap chat session | Opens conversation |
+| PAGE-005 | PAGE-007 | Tap new chat button | Creates new session |
 | PAGE-001 | PAGE-007 | Tap "New Chat" quick action | Starts new session |
-| PAGE-001 | PAGE-008 | Tap "Open Repo" | Opens repo list |
+| PAGE-001 | PAGE-009 | Tap "Open Repo" (if last repo exists) | Opens status of last-opened repo |
+| PAGE-001 | PAGE-008 | Tap "Open Repo" (no repos yet) | Opens empty repo list to init/clone |
 | PAGE-002 | PAGE-013 | Tap export button | Opens export flow |
 | PAGE-006 | PAGE-003 | Tap "New Doc" from context | Creates doc from chat |
-| PAGE-008 | PAGE-009 | Tap repository | Opens status |
+| PAGE-008 | PAGE-009 | Tap repository | Switch active repo, open status |
+| PAGE-009 | PAGE-008 | Tap "Manage Repositories" in switcher | Opens full repo list |
+| PAGE-009 | PAGE-009 | Select repo from switcher dropdown | Switch repo in-place (no nav push) |
 | PAGE-009 | PAGE-010 | Tap file in diff list | Opens diff viewer |
 | PAGE-009 | PAGE-011 | Tap commit button | Opens commit sheet |
 | PAGE-009 | PAGE-012 | Conflict detected | Opens conflict UI |
@@ -639,6 +846,8 @@ erDiagram
 | title | String | NOT NULL | Document title (first line or user-set) |
 | content | String | NOT NULL | Markdown content |
 | filePath | String | NOT NULL, UNIQUE | Path in app sandbox |
+| wordCount | Integer | default 0 | Word count for summary display |
+| contentPreview | String | default '' | First 200 characters for recent list preview |
 | createdAt | DateTime | NOT NULL | Creation timestamp |
 | updatedAt | DateTime | NOT NULL | Last modification timestamp |
 | lastOpenedAt | DateTime | NOT NULL | Last opened for recent list sorting |
@@ -654,6 +863,7 @@ erDiagram
 | id | UUID | PK | Unique identifier |
 | documentId | UUID | FK -> Document.id, NOT NULL | Parent document |
 | content | String | NOT NULL | Snapshot of markdown content |
+| versionNumber | Integer | NOT NULL | Monotonically incrementing version (1-based) |
 | savedAt | DateTime | NOT NULL | Snapshot timestamp |
 | source | Enum | NOT NULL | auto_save | manual_save | git_commit |
 
@@ -731,6 +941,15 @@ erDiagram
 | defaultAgentId | String | NOT NULL | Default agent (e.g., "auto") |
 | maxTokens | Integer | default 8192 | Max tokens per response |
 | temperature | Double | default 0.7 | Model temperature |
+| fontSize | Integer | default 16 | Editor font size |
+| theme | Enum | default 'system' | light | dark | system |
+| codeTheme | String | default 'github-dark' | Syntax highlighting theme |
+| spellCheck | Boolean | default true | Editor spell check toggle |
+| lineNumbers | Boolean | default true | Editor line numbers toggle |
+| tabSize | Integer | default 4 | Tab/indent width |
+| exportDefaults | JSON? | | Default format + destination for export flow |
+| lastRepoId | String? | | FK -> Repository.id — last viewed git repo for tab entry |
+| authEnabled | Boolean | default false | App lock toggle |
 | createdAt | DateTime | NOT NULL | Profile created |
 | updatedAt | DateTime | NOT NULL | Profile last modified |
 
@@ -1070,6 +1289,35 @@ data: [DONE]
 - After each API call, check `UsageAlert` thresholds
 - If warn threshold exceeded: show non-blocking warning banner
 - If block threshold exceeded: prevent further AI calls, show blocking message
+
+### 6.7 UC-007: Settings & Profile Management
+
+**Description:** Configure user preferences, manage AI providers, and control app behavior through Settings pages.
+
+**Operations:**
+
+| Operation | Method | Description |
+|-----------|--------|-------------|
+| Get User Profile | Read (Drift) | Load UserProfile from local DB |
+| Update User Profile | Write (Drift) | Save profile changes (theme, font, editor prefs) |
+| Toggle Mode | Write (Drift) | Switch between Free and Custom modes |
+| Update Model Mapping | Write (Drift) | Change per-task model assignments |
+| Validate API Key | POST + Read | Send test request to provider, persist on success |
+| Update Alerts | Write (Drift) | Modify UsageAlert thresholds |
+| Clear Export Cache | Delete (Filesystem) | Remove cached export files |
+| Toggle Auth | Write (Secure Storage) | Enable/disable biometric or PIN auth |
+| Export Usage Data | Read + Generate | Query UsageRecords, generate CSV |
+
+**Data Flow:**
+
+```
+User → SettingsPage → ProfileService → Drift (UserProfile, AIProvider, TaskModelMapping, UsageAlert)
+```
+
+**Error Handling:**
+- Database read failure: restore defaults, show recovery message
+- API key validation failure: show inline error on field, do NOT persist
+- Biometric not enrolled: fallback to PIN, show setup instructions
 
 ---
 
@@ -1467,7 +1715,7 @@ Future<ExportResult> exportDocument(
 
 | Feature | Page(s) | How Satisfied |
 |---------|---------|---------------|
-| F001 | PAGE-006 | Chat conversation page with streaming, stop button, token counter |
+| F001 | PAGE-005, PAGE-006, PAGE-007 | Chat list, conversation page with streaming, stop button, token counter, new chat |
 | F002 | PAGE-006 | Agent selector in chat header, tool indicator |
 | F003 | PAGE-006 | Task type badge in chat header, tap for mapping table |
 | F004 | PAGE-006 | Agent loop tool execution in chat service |

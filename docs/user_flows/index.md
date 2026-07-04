@@ -51,10 +51,25 @@ docs/user_flows/
 |------|------------|
 | PAGE-001 (Home) | UC-003, UC-005 |
 | PAGE-002 (Document Editor) | UC-003 |
+| PAGE-003 (New Document) | UC-003 |
+| PAGE-004 (Full Preview) | UC-003 |
+| PAGE-005 (Chat List) | UC-001 |
 | PAGE-006 (Chat Conversation) | UC-001, UC-002 |
+| PAGE-007 (New Chat) | UC-001 |
 | PAGE-008 (Git Repo List) | UC-005 |
+| PAGE-009 (Git Status) | UC-005 |
+| PAGE-010 (Git Diff) | UC-005 |
+| PAGE-011 (Git Commit) | UC-005 |
+| PAGE-012 (Git Conflict) | UC-005 |
 | PAGE-013 (Export) | UC-004 |
+| PAGE-014 (Export Format) | UC-004 |
+| PAGE-015 (Export Destination) | UC-004 |
+| PAGE-016 (Export Progress) | UC-004 |
+| PAGE-017 (Settings) | UC-007 |
 | PAGE-018 (Model Manager) | UC-006, UC-007 |
+| PAGE-019 (Usage Dashboard) | UC-006 |
+| PAGE-020 (CoT Project List) | UC-003 |
+| PAGE-021 (CoT Artifact Editor) | UC-003 |
 
 ## User Flow Dependencies
 
@@ -64,7 +79,7 @@ docs/user_flows/
 | UC-002 | UC-001 |
 | UC-003 | None |
 | UC-004 | UC-003 |
-| UC-005 | None |
+| UC-005 | None (repo list) or UC-007 (lastRepoId persistence) |
 | UC-006 | UC-001 |
 | UC-007 | UC-006 |
 
