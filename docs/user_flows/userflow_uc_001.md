@@ -80,6 +80,14 @@
 3. Shows "Reset Cap" button and link to usage dashboard
 4. **Outcome:** User resets cap or changes settings to continue
 
+## Security Considerations
+
+- API key retrieved from `flutter_secure_storage` at call time; never cached in memory beyond the HTTP request
+- Certificate pinning verified before HTTPS handshake to `api.deepseek.com`
+- Client-side rate limit checked before HTTP call (token bucket); request blocked if rate exceeded
+- Bearer token injected in `Authorization` header only — never in URL query parameters
+- Tool-call JSON from model output validated against UCIC schema; malformed tool calls rejected gracefully
+
 ## Postconditions
 
 - AI response is appended to conversation thread

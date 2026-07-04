@@ -338,6 +338,16 @@ components:
     textColor: "{colors.link}"
     typography: "{typography.button}"
 
+  # URL / Provider Validation
+
+  url-validation-info:
+    backgroundColor: "{colors.surface-soft}"
+    textColor: "{colors.body}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.sm}"
+    padding: 8px 12px
+    iconColor: "{colors.info}"
+
   # Form Validation States
 
   text-input-error:
@@ -639,6 +649,23 @@ Product UI screenshots inside demo-card grids retain native aspect ratios (typic
 5. Never document hover. The system documents Default and Active/Pressed states only.
 6. Run `npx @google/design.md lint DESIGN.md` after edits — `broken-ref`, `contrast-ratio`, and `orphaned-tokens` warnings flag issues automatically.
 7. When in doubt about emphasis: bigger type before bolder type, signature surface card before solid accent.
+
+## Security
+
+### URL Validation Pattern
+
+User-configured provider URLs must pass validation before acceptance:
+- Must have `https` scheme (rejected otherwise)
+- Must not contain path-injection characters (`../`, `//`, null bytes)
+- Must not be a raw IP address
+- Displayed with a `{component.url-validation-info}` chip showing the validated URL
+
+### Form Security
+
+- API key fields use `text-input` with `obscureText: true`
+- On focus loss, clipboard content is cleared to prevent paste-leak via task switcher
+- Validation result shown as `form-success-text` (green, connected) or `form-error-text` (red, with detail) below the field
+- Sensitive screens (auth, API key entry) set `FLAG_SECURE` via platform channel; component documentation notes this requirement
 
 ## Known Gaps
 

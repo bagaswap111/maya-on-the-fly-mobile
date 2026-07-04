@@ -1,6 +1,34 @@
 # Data Model Detail — SoT #6
 
-**Status:** Draft | **Last Updated:** 2026-07-04 | **Engine:** drift (SQLite)
+**Status:** Draft | **Last Updated:** 2026-07-04 | **Engine:** drift (SQLite) via sqlcipher
+
+## 0. Database Encryption
+
+The drift database is encrypted at rest using **sqlcipher** (AES-256-GCM) to protect documents, chat messages, usage records, and user profiles.
+
+**Passphrase derivation:**
+1. At first launch, generate a 32-byte cryptographic random via `Random.secure()`
+2. Derive the encryption key: `PBKDF2(deviceId + randomBytes, salt, 100000 iterations)`
+3. Store the derived passphrase in `flutter_secure_storage` keyed as `db_passphrase`
+4. On subsequent launches, read passphrase from flutter_secure_storage and unlock the database
+
+**Drift initialization with sqlcipher:**
+```dart
+final passphrase = await secureStorage.read(key: 'db_passphrase');
+final database = DatabaseConnection(
+  LazyDatabase(() async {
+    final file = File(join(await getDatabasesPath(), 'app.db'));
+    return await NativeDatabase.createInBackground(
+      file,
+      setup: (db) {
+        db.execute("PRAGMA key = '$passphrase'");
+      },
+    );
+  }),
+);
+```
+
+**Backup exclusion:** The encrypted drift database is excluded from iCloud and Android Backup via `android:allowBackup="false"` in AndroidManifest.xml and Keychain accessibility `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` on iOS.
 
 ## 1. Migration Strategy
 

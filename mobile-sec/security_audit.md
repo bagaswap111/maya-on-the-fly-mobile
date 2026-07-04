@@ -276,10 +276,10 @@
 
 ## References
 
-- `mobile-security-audit/mobile/SKILL.md` — Audit framework with 8 security domains
-- `mobile-security-audit/references/owasp-mobile-top10.md` — OWASP Mobile Top 10 mappings
-- `mobile-security-audit/references/flutter-security.md` — Flutter/Dart-specific security checklist
-- `mobile-security-audit/references/ios-security.md` — iOS platform security reference
-- `mobile-security-audit/references/android-security.md` — Android platform security reference
+- `~/.agents/skills/mobile-security-audit/mobile/SKILL.md` — Audit framework with 8 security domains
+- `~/.agents/skills/mobile-security-audit/references/owasp-mobile-top10.md` — OWASP Mobile Top 10 mappings
+- `~/.agents/skills/mobile-security-audit/references/flutter-security.md` — Flutter/Dart-specific security checklist
+- `~/.agents/skills/mobile-security-audit/references/ios-security.md` — iOS platform security reference
+- `~/.agents/skills/mobile-security-audit/references/android-security.md` — Android platform security reference
 - `architecture.md` §8 Security — Existing security architecture (lines 1555–1584)
 - `data_model_detail.md` — drift schema (no encryption documented)

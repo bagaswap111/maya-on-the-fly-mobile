@@ -102,6 +102,15 @@
 4. After credential entry: retries operation
 5. **Outcome:** Operation completes with valid credentials or cancelled
 
+## Security Considerations
+
+- GitHub PAT stored in `flutter_secure_storage`; retrieved at call time, never cached in memory
+- Biometric gate (FaceID/TouchID) required before every push operation; biometric failure shows fallback message
+- Certificate pinning verified before HTTPS handshake to `github.com`
+- Commits use git2dart (libgit2) API — no shell command construction, no injection risk
+- Git remote URL stored in drift (non-sensitive metadata only)
+- OAuth tokens for GitHub stored in platform credential store, not in app-managed storage
+
 ## Postconditions
 
 - Git operations are recorded in local log

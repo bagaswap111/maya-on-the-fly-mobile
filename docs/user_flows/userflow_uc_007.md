@@ -80,6 +80,16 @@
 4. All settings reset to defaults
 5. **Outcome:** App recovers with default settings
 
+## Security Considerations
+
+- PIN (6-digit) hashed with PBKDF2 (100k iterations, 16-byte random salt); hash and salt stored in `flutter_secure_storage`, never in drift
+- API keys validated via test request before persisting; invalid keys rejected with inline error
+- Provider baseUrl validated as HTTPS; non-HTTPS URLs rejected
+- Biometric enrollment changes detected via `local_auth` listener; re-prompt for credentials on change
+- FLAG_SECURE set on PAGE-018 and PAGE-026 to prevent screenshots of sensitive configuration
+- Export cache cleared on "Clear Export Cache"; cache files excluded from iCloud/Android Backup
+- App switcher preview blurred when auth is enabled and app is backgrounded
+
 ## Postconditions
 
 - UserProfile is updated in drift database

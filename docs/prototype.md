@@ -256,6 +256,7 @@ FullPreviewPage (ConsumerStatefulWidget)
 - **State preservation:** ConsumerStatefulWidget preserves zoom/scroll state across navigation
 - LaTeX renders with `flutter_markdown` LaTeX extension
 - Code blocks render with `highlight` package theme from settings
+- **Markdown sanitization:** Raw HTML tags (script, iframe, object, embed) stripped before rendering; configured via `flutter_markdown` extension set
 
 ---
 
@@ -943,6 +944,8 @@ ExportProgressPage (ConsumerStatefulWidget)
 - **Cancel behavior:** Aborts Isolate, navigates back to PAGE-013 with SnackBar "Export cancelled"
 - **Cancel confirmation:** If export > 50% complete, shows dialog: "Cancel export? {n}% done." with "Wait" and "Cancel" buttons
 - **Timeout threshold:** 120 seconds for conversion; 60 seconds for upload
+- **Filename sanitization:** User-provided export filenames sanitized — strip `/`, `\`, `..`, null bytes, limit to 255 chars
+- **File size limits:** Docs > 50MB rejected for AI processing; > 200MB for Git clone operations
 
 ---
 
@@ -988,6 +991,12 @@ SettingsPage (ConsumerStatefulWidget)
 ## 21. PAGE-018: Model Manager
 
 **Route:** `/settings/ai` | **Tab:** Settings stack
+
+### Security
+
+- **PAGE-018** sets `FLAG_SECURE` on `ModelManagerPage` — prevents screenshots/screen recording of API keys and provider credentials
+- API key fields use `obscureText: true` with optional reveal toggle
+- Clipboard cleared when API key field loses focus (prevents paste-leak from task switcher)
 
 ### Widget Tree
 
@@ -1284,6 +1293,14 @@ EditorSettingsPage (ConsumerStatefulWidget)
 
 **Route:** `/settings/privacy` | **Tab:** Settings stack
 
+### Security
+
+- Sets `FLAG_SECURE` — prevents screenshots of the auth configuration
+- PIN (6-digit) hashed with PBKDF2 (100k iterations, 16-byte salt), stored in `flutter_secure_storage`, never in drift
+- Listens for `local_auth` `onAuthenticationChanged`; re-prompts for credentials if biometric enrollment changes
+- App switcher preview blurred when app lock enabled and app is backgrounded
+- Auto-lock default: 1 minute; minimum: 30 seconds
+
 ### Widget Tree
 
 ```
@@ -1317,6 +1334,10 @@ PrivacySecurityPage (ConsumerStatefulWidget)
 ## 30. PAGE-027: Keyboard Shortcuts
 
 **Route:** `/settings/shortcuts` | **Tab:** Settings stack
+
+### Security
+
+- No sensitive data displayed on this page; FLAG_SECURE not required
 
 ### Widget Tree
 

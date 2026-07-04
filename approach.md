@@ -209,6 +209,10 @@ Skills are declared as OpenAI-compatible function definitions and registered wit
 
 Each skill has an **approval level**: `auto` (no prompt), `notify` (show in log), or `confirm` (require user tap). Destructive skills like `write_file` and `run_terminal` default to `confirm`. Humanizer skills default to `auto` but show a notification when applied.
 
+**File path validation:** All file-related skills (`read_file`, `write_file`, `edit_file`) validate that the requested path is within the project directory. Paths containing `../`, null bytes, or symlinks to locations outside the project root are rejected with a `ToolException` before any file operation.
+
+**Markdown preview sanitization:** The `flutter_markdown` preview pane strips raw HTML tags (`script`, `iframe`, `object`, `embed`) to prevent XSS vectors from user documents or AI-generated content.
+
 ##### AI Detection API Integration
 
 The `check_ai_score` skill supports multiple detection backends. Users configure which backend to use in settings.
@@ -323,7 +327,7 @@ A **Mode Toggle** at the top of the settings screen switches between two configu
 |---|---|---|---|---|
 | Active mode | `free` | `custom` | Shared prefs |
 | Chosen free model | `deepseek-v4-flash` | — | Shared prefs |
-| Provider URL | — | `https://api.deepseek.com` | `flutter_secure_storage` |
+| Provider URL | — | `https://api.deepseek.com` | `flutter_secure_storage`; validated as HTTPS on save |
 | API key | — | `sk-xxxx` | `flutter_secure_storage` |
 | Default model | — | `deepseek-v4-pro` | Shared prefs |
 | Model for `write` | — | `deepseek-v4-flash` | Shared prefs |
@@ -354,6 +358,7 @@ A **Mode Toggle** at the top of the settings screen switches between two configu
 | **Usage alerts** | Configurable thresholds — e.g. warn at $5, block at $10 (per day or per session) |
 | **Hard cap** | Optional monthly token or cost limit. Once reached, AI calls are blocked with a clear message. User must manually reset. |
 | **Usage history** | Scrollable chart showing daily usage for the last 30/60/90 days. Data never leaves the device. |
+| **Client-side rate limiting** | Token bucket per provider (configurable RPM), checked before each API call, stored in drift. Prevents quota exhaustion and provider bans. |
 | **Reset & export** | Reset counters for a new billing cycle. Export usage data as CSV for personal accounting. |
 
 #### Usage Dashboard
@@ -400,12 +405,12 @@ A dedicated screen accessible from the main navigation showing:
 
 #### Data storage
 
-| Data | Storage | Scope |
-|---|---|---|
-| Session usage | In-memory `Riverpod` state | Current session only, lost on app close |
-| Persistent usage | `drift` (SQLite) local DB | Daily/weekly/monthly aggregates, retained indefinitely |
-| Provider pricing | User-configured in profile | Per provider, used for cost estimation |
-| Usage limits | Shared prefs | Threshold values for alerts and hard caps |
+| Data | Storage | Encryption | Scope |
+|------|---------|------------|-------|
+| Session usage | In-memory `Riverpod` state | None (in-memory only) | Current session only, lost on app close |
+| Persistent usage | `drift` (SQLite) via sqlcipher | AES-256-GCM (passphrase from flutter_secure_storage) | Daily/weekly/monthly aggregates, retained indefinitely |
+| Provider pricing | User-configured in profile | Stored in encrypted drift DB | Per provider, used for cost estimation |
+| Usage limits | Shared prefs | None (no sensitive data) | Threshold values for alerts and hard caps |
 
 ### E. Export Engine
 
@@ -480,3 +485,8 @@ Conversion runs in a Dart `Isolate` to keep the UI at 60 fps. Large documents (1
 - **File system**: All Markdown files live in the app's sandboxed document directory. No arbitrary file system access.
 - **API key security**: Keys are stored in the OS keychain (`flutter_secure_storage`) and never logged or exposed in network error messages.
 - **Provider dependency**: App functionality degrades gracefully if the configured provider is unreachable — chat shows a clear error, editor and git remain fully usable.
+- **Drift encryption**: All SQLite data (documents, chat messages, usage records, profiles) stored via encrypted drift database using sqlcipher with passphrase derived from flutter_secure_storage + device ID.
+- **Certificate pinning**: Hardcoded provider endpoints (api.deepseek.com, github.com, www.googleapis.com) have certificate pinning enforced; user-added providers must pass HTTPS validation.
+- **Client-side rate limiting**: Token bucket algorithm per AI provider prevents quota exhaustion; RPM limits stored in drift and checked before each API call.
+- **Platform hardening**: FLAG_SECURE on sensitive screens (PAGE-018, PAGE-026, PAGE-027); allowBackup=false on Android; Keychain accessibility set to unlocked_this_device_only on iOS; export cache files excluded from backup.
+- **Release builds**: Obfuscation enabled via `--obfuscate --split-debug-info`; debug logging compiled out; DevTools disabled.

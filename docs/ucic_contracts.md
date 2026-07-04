@@ -6,6 +6,14 @@
 
 All AI API interactions use the OpenAI-compatible chat completions format. All requests are direct HTTPS from device to provider — no backend proxy.
 
+**Security constraints applied to all contract executions:**
+- Certificate pinning for hardcoded endpoints (api.deepseek.com, github.com, www.googleapis.com); hostname verification for user-added providers
+- Client-side rate limiting (token bucket per provider, configurable RPM) checked before every API call
+- HTTPS validated on every request; HTTP rejected at the client level
+- API key injected via `Authorization` header only (never in URL, body, or query params)
+- Provider `baseUrl` validated on save: `scheme == "https"`, no path injection, no IP addresses
+- Tool-call JSON from model output validated against UCIC schema; malformed tool calls rejected gracefully
+
 | Aspect | Value |
 |--------|-------|
 | Transport | HTTPS (TLS 1.2+) |

@@ -1,7 +1,7 @@
 ---
 version: v1.0
 status: Draft
-last_updated: 2026-07-04
+last_updated: 2026-07-04 (security audit fixes applied)
 sot: "#1 (SRS) + #2 (IA) + #6 (Data Model) + #7 (UCIC)"
 ---
 
@@ -71,6 +71,11 @@ Maya on the Fly is a Flutter-native mobile application for AI-assisted document 
 | C003 | API keys stored in OS keychain only | flutter_secure_storage; never in plaintext |
 | C004 | All AI features require internet | Graceful degradation: editor/git work offline, AI shows clear error |
 | C005 | Font licensing — no commercial fonts without license | Use Inter (OFL) as primary, system-ui fallback |
+| C006 | Drift database MUST be encrypted via sqlcipher | Passphrase derived from flutter_secure_storage + device ID |
+| C007 | Certificate pinning for all AI provider and git remote endpoints | Pinned certificates or public keys for api.deepseek.com, github.com, www.googleapis.com |
+| C008 | PIN for app lock MUST be hashed with PBKDF2 (100k+ iterations) | Salt and hash stored in flutter_secure_storage, never in drift |
+| C009 | FLAG_SECURE MUST be set on windows showing sensitive data | App lock, API key entry, repository credentials pages |
+| C010 | Release builds MUST use --obfuscate --split-debug-info | Prevents reverse engineering of agent loop, tool definitions, provider auth |
 
 ### 1.6 Assumptions
 
@@ -331,6 +336,13 @@ Maya on the Fly replaces prompt-driven AI development with Source-of-Truth-drive
 - NFR-002.3: No plaintext secrets in logs, error messages, or network traces
 - NFR-002.4: AI provider communication over HTTPS only
 - NFR-002.5: Session tokens never persisted to disk
+- NFR-002.6: Drift database MUST be encrypted at rest via sqlcipher
+- NFR-002.7: Certificate pinning MUST be enforced for all hardcoded provider endpoints (api.deepseek.com, github.com, www.googleapis.com)
+- NFR-002.8: App lock PIN MUST be stored as PBKDF2 hash (100k+ iterations, 16-byte salt) in flutter_secure_storage
+- NFR-002.9: FLAG_SECURE MUST be set on PAGE-018, PAGE-026, PAGE-027, and any screen displaying credentials or API keys
+- NFR-002.10: Obfuscation MUST be enabled in release builds (--obfuscate --split-debug-info)
+- NFR-002.11: Debug logging MUST be stripped from release builds; user-facing errors must never contain stack traces
+- NFR-002.12: Backup MUST be explicitly configured — drift database excluded from iCloud/Android Backup
 
 #### NFR-003: Reliability
 - NFR-003.1: Editor functions fully offline (no AI dependency)
@@ -1551,21 +1563,26 @@ lib/
 
 ### 8.1 Data at Rest
 
-| Data | Storage | Encryption |
-|------|---------|------------|
-| API keys | flutter_secure_storage | OS keychain (iOS Keychain / Android EncryptedSharedPreferences) |
-| GitHub PAT | flutter_secure_storage | OS keychain |
-| Documents | path_provider (app sandbox) | iOS: NSFileProtectionComplete; Android: device storage (encrypted by default on API 28+) |
-| Usage data | drift SQLite | No PII stored; all local |
-| Chat messages | drift SQLite | No PII stored; all local |
+| Data | Storage | Encryption | Backup |
+|------|---------|------------|--------|
+| API keys | flutter_secure_storage | OS keychain (iOS Keychain / Android EncryptedSharedPreferences) | Not backed up (keychain tied to device) |
+| GitHub PAT | flutter_secure_storage | OS keychain | Not backed up |
+| Documents | path_provider (app sandbox) | iOS: NSFileProtectionComplete; Android: device storage (encrypted by default on API 28+) | Excluded from backup |
+| Drift DB (usage, chat, profile, repos) | drift SQLite via sqlcipher | AES-256-GCM (sqlcipher); passphrase = PBKDF2(deviceId + secureStorageKey, salt, 100k) derived at first launch, stored in flutter_secure_storage | Excluded from iCloud/Android Backup via allowBackup=false |
+| Export cache | {appDocDir}/exports/ | Platform-level encryption only | Deleted after share or on app background; excluded from backup |
+| Session usage | In-memory Riverpod state | None (in-memory only) | N/A |
+| Clipboard (after API key paste) | Cleared immediately after field loses focus | N/A | N/A |
 
 ### 8.2 Data in Transit
 
-| Connection | Protocol | Auth |
-|------------|----------|------|
-| AI Provider API | HTTPS (TLS 1.2+) | Bearer token (API key in Authorization header) |
-| GitHub | HTTPS (TLS 1.2+) | PAT or OAuth token |
-| Google Drive | HTTPS (TLS 1.2+) | OAuth 2.0 token |
+| Connection | Protocol | TLS | Certificate Pinning | Auth |
+|------------|----------|-----|---------------------|------|
+| AI Provider API | HTTPS (TLS 1.2+) | >= 1.2 enforced | Pinned for api.deepseek.com (SHA-256 fingerprint) | Bearer token (API key in Authorization header) |
+| GitHub | HTTPS (TLS 1.2+) | >= 1.2 enforced | Pinned for github.com | PAT or OAuth token |
+| Google Drive | HTTPS (TLS 1.2+) | >= 1.2 enforced | Pinned for www.googleapis.com | OAuth 2.0 token |
+| AI Detection APIs | HTTPS (TLS 1.2+) | >= 1.2 enforced | Hostname verification minimum | Bearer token |
+| Literature Search | HTTPS (TLS 1.2+) | >= 1.2 enforced | Hostname verification minimum | None or API key in header |
+| User-configured providers | HTTPS (baseUrl validated on save) | >= 1.2 enforced | Hostname verification minimum; optional pinning via settings | Bearer token or API key header |
 
 ### 8.3 Authentication
 
@@ -1573,8 +1590,13 @@ lib/
 |-----------|--------|-------|
 | AI API calls | Bearer token (API key) | Key stored in secure storage, injected in HTTP header |
 | Git push | Biometric (FaceID/TouchID) + PAT | Biometric gate before each push; PAT from secure storage |
-| Google Drive | OAuth 2.0 (google_sign_in) | Refresh token flow |
+| Google Drive | OAuth 2.0 (google_sign_in) | Refresh token flow; tokens stored in platform credential store |
 | GitHub | OAuth 2.0 or PAT | PAT for CLI-like access; OAuth for web flow |
+| App lock | Biometric OR PIN (fallback) | PIN stored as PBKDF2(6-digit PIN, 16-byte random salt, 100k iterations) in flutter_secure_storage; salt alongside hash |
+| App lock — enrollment change | Re-prompt for credentials | Listen to local_auth onAuthenticationChanged; force re-login if new biometric added |
+| App lock — auto-lock | Configurable timer | Default: 1 minute; minimum: 30 seconds; options: 30s, 1m, 5m, Never |
+| App lock — app switcher | FLAG_SECURE on lock screen | Prevents sensitive content preview in task manager; app preview blurred when backgrounded |
+| OAuth redirect URI | Custom URL scheme | mayaofthefly://oauth/callback; ASWebAuthenticationSession (iOS) / Chrome Custom Tabs (Android) |
 
 ### 8.4 Logging & Error Safety
 
@@ -1582,6 +1604,62 @@ lib/
 - Error messages returned to user do NOT include stack traces or internal details
 - Network error logging excludes request body content
 - Crash reports (if implemented) redact sensitive fields
+- Debug/verbose logging compiled out in release builds (kReleaseMode guard on all debugPrint calls)
+
+### 8.5 Platform Hardening
+
+| Platform | Configuration | Enforcement |
+|----------|--------------|-------------|
+| Android | allowBackup=false in AndroidManifest.xml | Prevents drift DB and export cache from being backed up to Google Drive |
+| Android | FLAG_SECURE on PAGE-018, PAGE-026, PAGE-027 | Blocks screenshots/screen recording on sensitive screens |
+| Android | Exported activities constrained | OAuth callback activities marked android:exported="false" with permission checks |
+| Android | Root/jailbreak detection for app-lock features | Detect via /system/app/Superuser.apk, build.TAGS, test-keys; warn user and block sensitive features |
+| Android | content:// URI exposure | No FileProvider exports; file access restricted to app sandbox |
+| iOS | Keychain accessibility = kSecAttrAccessibleWhenUnlockedThisDeviceOnly | Explicitly set in configureFlutterSecureStorage; prevents backup to iCloud |
+| iOS | NSAppTransportSecurity with specific domains | No wildcard exceptions; only api.deepseek.com, github.com, www.googleapis.com, and user-configured HTTPS providers |
+| iOS | UIPasteboard cleared after API key paste | Cleared programmatically when text field loses focus |
+| iOS | FLAG_SECURE equivalent via applicationDidEnterBackground blur | App preview blurred in task switcher when auth enabled |
+| Both | Debug mode detection | print(Flutter.releaseMode) checks; DevTools disabled in release; FlutterError.onError overridden for release crash handling |
+| Both | Source maps and debug symbols excluded from release | --split-debug-info=symbols/ saved to build artifacts, NOT shipped; source maps excluded |
+
+### 8.6 Input Validation & Injection Prevention
+
+| Vector | Validation | Implementation |
+|--------|-----------|----------------|
+| File paths (agent tools) | Reject ../ traversal, null bytes, symlinks outside project dir | Resolve path relative to project root; throw ToolException on traversal |
+| Export filenames | Strip /, \, .., null bytes; limit to 255 chars | Sanitize user-provided filename before file creation |
+| Markdown/HTML rendering | Strip raw HTML tags; block script, iframe, object, embed | Configure flutter_markdown with sanitized extension set |
+| LaTeX rendering | Block \write18, \input outside project dir, filesystem operations | Sandbox in Dart Isolate with blocked commands |
+| AI agent tool calls | Validate tool-call JSON schema; reject unexpected format | Parse with json_serializable; fallback on malformed output |
+| Commit messages | No shell escape possible (git2dart uses libgit2 API) | Verify no raw Process.run fallback |
+| SQL queries | Drift parameterized queries only | No raw SQL concatenation; drift compilation validates all queries |
+| Provider baseUrl | Must be HTTPS; reject IP addresses, path injection | Uri.tryParse → scheme == 'https'; no path segments beyond allowed base |
+| API responses | Validate against UCIC schema; handle malformed JSON | JSON decode with try-catch; return user-friendly error on failure |
+
+### 8.7 Code & Binary Security
+
+| Measure | Implementation | Build Flag |
+|---------|---------------|------------|
+| Code obfuscation | Renames class/function names to short symbols | --obfuscate |
+| Debug symbols separated | Symbol map saved to symbols/ directory (not shipped) | --split-debug-info=symbols/ |
+| Source maps excluded | Not included in release builds | Default Flutter behavior |
+| DevTools disabled | Not accessible in release mode | Flutter build --release |
+| Debug logging stripped | kReleaseMode guard on all debugPrint/log calls | Conditional compilation |
+| Dependency scanning | dart pub outdated --security in CI | CI gate |
+| Error messages | Generic user-facing; no stack traces, internal paths, or HTTP body | Error handling mapper |
+
+### 8.8 API & Integration Security
+
+| Measure | Implementation |
+|---------|---------------|
+| API key rotation | Configurable via settings (PAGE-018) without app update |
+| API key validation | Test request sent on save before accepting key |
+| Client-side rate limiting | Token bucket algorithm per provider (configurable RPM) stored in drift |
+| Usage hard cap | Checked before each API call; enforced locally (persisted in drift) |
+| OAuth flow | System browser (ASWebAuthenticationSession / Chrome Custom Tabs); custom URL scheme redirect |
+| OAuth token refresh | google_sign_in handles refresh automatically; flutter_appauth configured with refresh token |
+| File size limits | Docs > 50MB rejected for AI processing; > 200MB for Git clone |
+| Provider URL validation | Must pass Uri.parse with scheme == 'https'; path injection checked |
 
 ---
 
