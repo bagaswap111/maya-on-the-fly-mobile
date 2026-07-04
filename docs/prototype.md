@@ -4,7 +4,7 @@
 
 ## 1. Introduction
 
-This document specifies the HiFi prototype widget trees for all 22 pages of Maya on the Fly. Each page definition covers:
+This document specifies the HiFi prototype widget trees for all 28 pages of Maya on the Fly. Each page definition covers:
 
 - Widget composition tree (rendered Flutter widget hierarchy)
 - State handling (loading / empty / error / success)

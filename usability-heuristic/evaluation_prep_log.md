@@ -1,6 +1,6 @@
 # Usability Evaluation Fix Log
 
-**Generated:** 2026-07-04 | **Scope:** prototype.md, architecture.md, user flows, system logics | **Last Updated:** 2026-07-04
+**Generated:** 2026-07-04 | **Scope:** prototype.md, architecture.md, user flows, system logics, test artifacts, all SoT documents | **Last Updated:** 2026-07-04
 
 ## Summary
 
@@ -8,6 +8,7 @@
 |--------|-------|
 | ✅ Fixed (design specs) | 23 (batch 1) + 28 (batch 2) = **51 total** |
 | ✅ Fixed (test artifact consistency) | Batch 3 — **12 issues** |
+| ✅ Fixed (cross-artifact consistency) | Batch 4 — **11 issues** |
 | 🔲 Deferred to implementation | 2 |
 | 🔲 Won't fix (intentional) | 3 |
 
@@ -156,3 +157,23 @@ These issues were found during cross-artifact audit of `test_cases.md`, `test_pl
 | 10 | test_plan.md §2.1.2 | F001 mapped to UC-001+UC-002; user_flows/index.md maps F001 to UC-001 only | Removed UC-002 from F001 mapping |
 | 11 | test_execution_sheet.md | Missing F002/F009 sections; TC-F001-003 (now F002-001) in wrong section; section numbers unaligned; counts at 68 instead of 78 | Added F002 §2, F009 §9; fixed headers; updated counts to 78 |
 | 12 | All three test artifacts | Section numbering inconsistent after inserting F002/F009 | Renumbered sequentially: F001=1, F002=2, …, F010=10, Settings=11 |
+
+---
+
+## Batch 4 — Cross-Artifact Consistency Fixes (2026-07-04)
+
+These issues were found during comprehensive cross-artifact audit of all SoT documents:
+
+| # | File | Issue | Fix Applied |
+|---|------|-------|-------------|
+| 1 | prototype.md §1 | Says "22 pages" but defines all 28 | Updated to "28 pages" |
+| 2 | test_cases.md §1.2, §4.3 | Claims 68 total (50P/3N/15E); actual is 78 (60P/3N/15E) after adding F002/F009/SET/F006 TCs | Updated to 78 total (60P/3N/15E) |
+| 3 | approach.md §Free Mode, §Custom Mode | Says "12 agents" in two locations but agent table lists 13 | Changed both to "13 agents" |
+| 4 | test_plan.md §1.3, test_execution_sheet.md | All `docs/`-prefixed paths redundant from `docs/` directory | Changed `docs/` prefix to `./` |
+| 5 | architecture.md §ENT-007 | UserProfile entity missing `name`, `email`, `signature` columns needed by PAGE-023 | Added all 3 attributes |
+| 6 | architecture.md §ENT-011 | Repository entity missing `unpushedCount`, `lastCommitMessage`, `lastCommitAt` from data_model_detail | Added all 3 columns |
+| 7 | architecture.md §ENT-005 | AIProvider entity listed `apiKey` as drift column; stored in flutter_secure_storage | Added explicit "NOT a drift column" note |
+| 8 | architecture.md §5.4 | UserProfile→UsageAlert said "1:1" but data model has no unique constraint | Changed to "1:0..1" with UNIQUE constraint note |
+| 9 | architecture.md §F009 | Claimed "26 tools in 5 categories" vs UCIC 30 + approach.md ~38 | Updated to "46 tools in 8 categories"; synced FR-009.1 |
+| 10 | approach.md §Skills | Missing 8 infrastructure tools from UCIC (switch_agent, get_tools, get_agent_info, ask_agent, web_search, fetch_url, git_push, git_log) | Added "Agent & Infrastructure Skills" section with all 8 |
+| 11 | ucic_contracts.md §4 | Missing 16 document/citation/writing/humanizer tools from approach.md | Added 4 new sections (4.11–4.14) with C-TOOL-031 to C-TOOL-046 |

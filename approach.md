@@ -143,7 +143,20 @@ Skills are declared as OpenAI-compatible function definitions and registered wit
 | `git_status` | `gitStatus()` | Get current repo status |
 | `git_commit` | `gitCommit(message)` | Stage all and commit |
 | `git_diff` | `gitDiff(file)` | Show unstaged diff |
+| `git_push` | `gitPush(remote?)` | Push commits to remote |
+| `git_log` | `gitLog(limit?)` | Show commit history |
 | `run_terminal` | `runTerminal(cmd)` | Run a shell command (Android only, shows approval dialog) |
+
+##### Agent & Infrastructure Skills
+
+| Skill | Tool function | Description |
+|---|---|---|
+| `switch_agent` | `switchAgent(agentId)` | Switch to a different agent persona |
+| `get_tools` | `getTools()` | List available tools for current agent |
+| `get_agent_info` | `getAgentInfo(agentId)` | Get details about a specific agent |
+| `ask_agent` | `askAgent(agentId, task)` | Delegate a sub-task to another agent |
+| `web_search` | `webSearch(query)` | Search the web for information |
+| `fetch_url` | `fetchUrl(url)` | Fetch content from a URL |
 
 ##### Document Structure Skills
 
@@ -285,7 +298,7 @@ A **Mode Toggle** at the top of the settings screen switches between two configu
 - User picks **one free model** from a curated list of models with free tiers or free API grants
 - That single model is used for all task types and all agents
 - No API key required — the app uses the provider's free tier or bundled proxy
-- **All 12 agents and all skills are fully unlocked** — no restricted features
+- **All 13 agents and all skills are fully unlocked** — no restricted features
 - Ideal for beginners, students, evaluation, or users who don't want to manage keys
 
 | Available free models | Provider | Notes |
@@ -324,7 +337,7 @@ A **Mode Toggle** at the top of the settings screen switches between two configu
 | Model for `commit` | — | `deepseek-v4-flash` | Shared prefs |
 | Model for `plan` | — | `deepseek-v4-pro` | Shared prefs |
 | Model for `format` | — | `deepseek-v4-flash` | Shared prefs |
-| Agent-to-model mapping | — | Per agent (12 agents) | Shared prefs |
+| Agent-to-model mapping | — | Per agent (13 agents) | Shared prefs |
 | Max tokens | Inherited from free model | `8192` | Shared prefs |
 | Temperature | `0.7` | `0.7` | Shared prefs |
 | Active profile | — | `"Balanced"` | Shared prefs |

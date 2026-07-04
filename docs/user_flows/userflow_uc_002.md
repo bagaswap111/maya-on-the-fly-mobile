@@ -126,5 +126,5 @@
 | FR-004.5 | Stop cancels API call and discards tool results | HTTP request aborted, remaining tool calls skipped |
 | FR-004.6 | Stop returns partial output | Partial response displayed before interruption |
 | BR-004.1 | Destructive tools default to "confirm" | write_file, run_terminal show confirmation dialog |
-| FR-009.1 | Support 26 tool functions in 5 categories | SkillRegistry with all 26 skills |
+| FR-009.1 | Support 46 tool functions in 8 categories | SkillRegistry with all 46 skills |
 | FR-009.2 | Each skill has approval level | Each skill configured with auto/notify/confirm |

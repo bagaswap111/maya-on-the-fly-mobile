@@ -18,12 +18,12 @@ Verify that Maya on the Fly implements all 10 SRS features correctly per their u
 
 ### 1.3 References
 - SRS: ../architecture.md
-- User Flows: docs/user_flows/
-- UCIC: docs/ucic_contracts.md
-- Data Model: docs/data_model_detail.md
-- Prototype: docs/prototype.md
-- Test Cases: docs/test_cases.md
-- Test Execution Sheet: docs/test_execution_sheet.md
+- User Flows: ./user_flows/
+- UCIC: ./ucic_contracts.md
+- Data Model: ./data_model_detail.md
+- Prototype: ./prototype.md
+- Test Cases: ./test_cases.md
+- Test Execution Sheet: ./test_execution_sheet.md
 
 ## 2. Test Scope
 

@@ -273,17 +273,17 @@ Maya on the Fly replaces prompt-driven AI development with Source-of-Truth-drive
 
 #### F009: Skills System (Priority: Medium)
 
-**Description:** 26 tool functions across 5 categories (Files/Git, Document Structure, Research/Citation, Writing Quality, Humanizer/AI Detection) with approval levels.
+**Description:** 46 tool functions across 8 categories (File, Search, Agent/Infrastructure, Research, Git, Document Structure, Writing Quality, Humanizer) with approval levels.
 
 **Functional Requirements:**
-- FR-009.1: System MUST support 26 tool functions organized in 5 categories
+- FR-009.1: System MUST support 46 tool functions organized in 8 categories
 - FR-009.2: Each skill MUST have an approval level (auto/notify/confirm)
 - FR-009.3: Destructive skills MUST default to "confirm" requiring user tap
 - FR-009.4: Humanizer skills MUST support AI detection via local heuristics + API (GPTZero, Originality.ai, Copyleaks)
 - FR-009.5: Research skills MUST support literature search via Semantic Scholar, arXiv, CrossRef
 
 **Acceptance Criteria:**
-- [ ] All 26 skills are callable by the agent loop
+- [ ] All 46 skills are callable by the agent loop
 - [ ] Approval levels gate the appropriate skills
 - [ ] AI detection returns a score with flagged patterns
 
@@ -900,13 +900,14 @@ erDiagram
 #### ENT-005: AIProvider
 
 *Purpose:* Configuration for an AI provider (API key, base URL, model list).
+> **Note:** API key is a logical entity attribute stored in `flutter_secure_storage`; the drift table does **not** contain an `apiKey` column.
 
 | Attribute | Type | Constraint | Description |
 |-----------|------|------------|-------------|
 | id | String | PK | Provider key (deepseek, openai, anthropic, etc.) |
 | name | String | NOT NULL | Display name |
 | baseUrl | String | NOT NULL | API endpoint |
-| apiKey | String | NOT NULL | Encrypted API key (flutter_secure_storage) |
+| apiKey | String | flutter_secure_storage only | Encrypted API key — NOT a drift column |
 | defaultModel | String | NOT NULL | Default model ID |
 | isEnabled | Boolean | default true | Provider enabled/disabled |
 | models | JSON | NOT NULL | Available models list with pricing |
@@ -936,6 +937,9 @@ erDiagram
 | Attribute | Type | Constraint | Description |
 |-----------|------|------------|-------------|
 | id | String | PK | Profile name (e.g., "Balanced") |
+| name | String | NOT NULL | Display name for profile editor |
+| email | String? | | User email for export metadata |
+| signature | String? | | Default commit signature (e.g., "Alice <alice@example.com>") |
 | mode | Enum | NOT NULL | free | custom |
 | freeModelId | String? | | Selected model in Free mode |
 | defaultAgentId | String | NOT NULL | Default agent (e.g., "auto") |
@@ -1005,6 +1009,9 @@ erDiagram
 | defaultBranch | String | default "main" | Default branch name |
 | lastSyncedAt | DateTime? | | Last successful fetch/push |
 | authMethod | Enum? | pat | oauth | SSH auth method |
+| unpushedCount | Integer | default 0 | Number of commits ahead of remote |
+| lastCommitMessage | String? | | Most recent commit message |
+| lastCommitAt | DateTime? | | Timestamp of most recent commit |
 
 ### 5.4 Relationships
 
@@ -1014,7 +1021,7 @@ erDiagram
 | ChatSession -> ChatMessage | One-to-Many | 1:N | One session has many messages |
 | Document -> ChatSession | One-to-Many | 1:N | One document can be referenced by many chats |
 | UserProfile -> TaskModelMapping | One-to-Many | 1:N | One profile has many per-task mappings |
-| UserProfile -> UsageAlert | One-to-One | 1:1 | One profile has one alert config |
+| UserProfile -> UsageAlert | One-to-ZeroOrOne | 1:0..1 | One profile has at most one alert config; enforced by unique constraint on UsageAlert.profileId |
 | AIProvider -> UsageRecord | One-to-Many | 1:N | One provider generates many usage records |
 | Document -> UsageRecord | One-to-Many | 1:N | One document generates usage via AI chat |
 | Document -> ExportRecord | One-to-Many | 1:N | One document can have many exports |

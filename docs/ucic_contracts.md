@@ -242,7 +242,7 @@ Single JSON body (see non-streaming response example in C-CM-001).
 
 ---
 
-## 4. C-TOOL-001 through C-TOOL-026: Skill Tool Definitions
+## 4. C-TOOL-001 through C-TOOL-046: Skill Tool Definitions
 
 ### 4.1 File Skills (C-TOOL-001 to C-TOOL-003)
 
@@ -344,6 +344,42 @@ Single JSON body (see non-streaming response example in C-CM-001).
 | ID | Name | Description | Parameters | Approval |
 |----|------|-------------|------------|----------|
 | C-TOOL-030 | `run_terminal` | Run a terminal command | `command: string, args: array` | `confirm` |
+
+### 4.11 Document Structure Skills (C-TOOL-031 to C-TOOL-034)
+
+| ID | Name | Description | Parameters | Approval |
+|----|------|-------------|------------|----------|
+| C-TOOL-031 | `insert_figure` | Insert a figure placeholder with caption | `path: string, caption: string, ref?: string` | `notify` |
+| C-TOOL-032 | `insert_table` | Insert a table with caption | `path: string, rows: int, cols: int, caption?: string` | `notify` |
+| C-TOOL-033 | `insert_equation` | Insert a LaTeX equation | `path: string, latex: string` | `notify` |
+| C-TOOL-034 | `generate_abstract` | Generate abstract from document content | `path: string, style?: string, length?: string` | `auto` |
+
+### 4.12 Citation Skills (C-TOOL-035 to C-TOOL-038)
+
+| ID | Name | Description | Parameters | Approval |
+|----|------|-------------|------------|----------|
+| C-TOOL-035 | `insert_citation` | Insert a citation placeholder | `path: string, citationKey: string` | `notify` |
+| C-TOOL-036 | `generate_bibliography` | Generate formatted bibliography | `path: string, style: string` | `auto` |
+| C-TOOL-037 | `format_citation_style` | Convert inline citations to a style | `content: string, style: string` | `auto` |
+| C-TOOL-038 | `extract_citations` | Extract all citations from text | `text: string` | `auto` |
+
+### 4.13 Advanced Writing Skills (C-TOOL-039 to C-TOOL-042)
+
+| ID | Name | Description | Parameters | Approval |
+|----|------|-------------|------------|----------|
+| C-TOOL-039 | `simplify` | Simplify text to target reading level | `text: string, level?: string` | `auto` |
+| C-TOOL-040 | `check_readability` | Score text readability (Flesch, Dale-Chall) | `text: string` | `auto` |
+| C-TOOL-041 | `check_consistency` | Flag terminology, tense, and style inconsistencies | `text: string` | `auto` |
+| C-TOOL-042 | `generate_executive_summary` | Summarize a long document to executive summary | `path: string, length?: string` | `auto` |
+
+### 4.14 Advanced Humanizer Skills (C-TOOL-043 to C-TOOL-046)
+
+| ID | Name | Description | Parameters | Approval |
+|----|------|-------------|------------|----------|
+| C-TOOL-043 | `humanize_academic` | Academic-flavored humanization (preserve formal style) | `text: string` | `notify` |
+| C-TOOL-044 | `humanize_business` | Business-flavored humanization (conversational but professional) | `text: string` | `notify` |
+| C-TOOL-045 | `add_personal_voice` | Inject personal voice markers (anecdotes, opinions) | `text: string, traits?: array` | `notify` |
+| C-TOOL-046 | `vary_structure` | Vary sentence length and structure | `text: string` | `notify` |
 
 ---
 
@@ -520,6 +556,7 @@ User                  ChatPage              AgentEngine             AI Provider 
 | C-TOOL-001–027 | 1.0 | 2026-07-04 |
 | C-TOOL-028–029 | 1.0 | 2026-07-04 |
 | C-TOOL-030 | 1.0 | 2026-07-04 |
+| C-TOOL-031–046 | 1.0 | 2026-07-04 |
 | C-DB-001–011 | 1.0 | 2026-07-04 |
 | C-EVENT-001–005 | 1.0 | 2026-07-04 |
 | C-FLOW-001 | 1.0 | 2026-07-04 |

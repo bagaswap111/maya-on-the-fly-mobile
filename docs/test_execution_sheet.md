@@ -1,15 +1,15 @@
 # Test Execution Sheet: Maya on the Fly
 
-**Document:** SoT-10 Execution Tracking | **Derived From:** docs/test_cases.md | **Status:** Draft | **Last Updated:** 2026-07-04
+**Document:** SoT-10 Execution Tracking | **Derived From:** ./test_cases.md | **Status:** Draft | **Last Updated:** 2026-07-04
 
 > Records actual execution results against the test cases derived from the Sources of Truth. Failures are diagnosed as Implementation error vs Source-of-Truth error (see Revision Loop in SKILL.md).
 
 ## 1. Instructions
 
-- Execute each TC from `docs/test_cases.md` and record the actual result and status.
+- Execute each TC from `./test_cases.md` and record the actual result and status.
 - **Status values:** PASS / FAIL / N/A (blocked or out-of-scope for this run).
 - On FAIL: record actual result, then triage — is the defect in the implementation (fix code) or in a Source of Truth (fix the artifact, re-validate downstream)?
-- Keep TC IDs, scenarios, and expected results identical to `docs/test_cases.md`.
+- Keep TC IDs, scenarios, and expected results identical to `./test_cases.md`.
 
 ## 1. Feature F001: AI Chat with Streaming
 
@@ -139,7 +139,7 @@
 
 | TC ID | Test Scenario | Test Steps | Expected Result | Actual Result | Status | Notes |
 |-------|---------------|------------|-----------------|---------------|--------|-------|
-| TC-F009-001 | Skills list loads 5 categories | Open Skills tab | 5 category sections; ≥26 tool chips; each shows name + approval level | | | |
+| TC-F009-001 | Skills list loads 5 categories | Open Skills tab | 5 category sections; ≥46 tool chips; each shows name + approval level | | | |
 | TC-F009-002 | Tool approval filter | Set write_file to "Deny"; prompt save | Tool grayed out; agent told "write_file is denied"; adapts without writing | | | |
 | TC-F009-003 | Disabled skill hides tools | Toggle "Writing" OFF; list tools | Writing section grayed; tools suppressed; re-enable restores access | | | |
 | TC-F009-004 | Search/filter by name | Type "git" in search | 6 git tools shown; non-matching hidden; clear restores full list | | | |

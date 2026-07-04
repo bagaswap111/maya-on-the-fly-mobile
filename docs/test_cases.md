@@ -10,7 +10,7 @@
 Provide testable, traceable cases that verify the implementation against the validated Sources of Truth across all 10 SRS features and 7 use cases.
 
 ### 1.2 Scope
-All 10 features (F001–F010) and 7 use cases (UC-001–UC-007). 68 test cases total: 50 positive, 3 negative, 15 exception.
+All 10 features (F001–F010) and 7 use cases (UC-001–UC-007). 78 test cases total: 60 positive, 3 negative, 15 exception.
 
 ### 1.3 Test Case Format
 
@@ -1299,10 +1299,10 @@ All 10 features (F001–F010) and 7 use cases (UC-001–UC-007). 68 test cases t
 
 | Type | Count |
 |------|-------|
-| Positive | 50 |
+| Positive | 60 |
 | Negative | 3 |
 | Exception | 15 |
-| **Total** | **68** |
+| **Total** | **78** |
 
 ## 5. Test Execution Notes
 
