@@ -196,3 +196,14 @@ Systematic verification of every issue from `evaluation_build.md` against curren
 - `dart analyze lib/` — **No issues found**
 - `dart analyze test/` — **No issues found**
 - `flutter test` — **17/17 All tests passed**
+
+---
+
+## Round 4 — GitHub CI/CD — 2026-07-05
+
+**Pushed to:** `github.com/bagaswap111/maya-on-the-fly-mobile`
+
+| Workflow | File | Trigger | What it does |
+|----------|------|---------|-------------|
+| CI | `.github/workflows/ci.yml` | Push/PR to `main` | `flutter pub get` → `dart analyze` → `flutter test` |
+| Build | `.github/workflows/build.yml` | Tag `v*` or manual dispatch | Build APK (ubuntu) + IPA (macos) → upload artifacts → create GitHub Release on tags |
