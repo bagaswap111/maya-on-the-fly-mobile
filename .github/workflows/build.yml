@@ -29,8 +29,8 @@ jobs:
         run: |
           FLUTTER_DIR=$(dirname $(dirname $(which flutter)))
           GRADLE_DIR="$FLUTTER_DIR/packages/flutter_tools/gradle"
-          # Remove kotlin("jvm") version line that conflicts with Gradle 7's kotlin-dsl
-          sed -i '/kotlin("jvm") version /d' "$GRADLE_DIR/build.gradle.kts"
+          # Downgrade Kotlin version from 2.2.20 to 1.9.22 for Gradle 7.6.3 kotlin-dsl compat
+          sed -i 's/kotlin("jvm") version "2\.2\.20"/kotlin("jvm") version "1.9.22"/' "$GRADLE_DIR/build.gradle.kts"
 
       - run: flutter build apk --release
 
