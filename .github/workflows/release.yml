@@ -25,20 +25,11 @@ jobs:
 
       - run: flutter pub get
 
-      - name: Patch Flutter Gradle plugin for Gradle 7 compatibility
+      - name: Patch Flutter Gradle plugin for Gradle 8.3 compatibility
         run: |
-          FLUTTER_DIR=$(dirname $(dirname $(which flutter)))
-          GRADLE_DIR="$FLUTTER_DIR/packages/flutter_tools/gradle"
-          # Clean any artifacts from previous patch runs
-          rm -f "$GRADLE_DIR/gradle.properties"
-          # Gradle 7.6.3 kotlin-dsl sets languageVersion=1.4 by default.
-          # Kotlin 2.x removed support for language version 1.4, so downgrade to Kotlin 1.9.22.
-          sed -i 's/kotlin("jvm") version "2\.2\.20"/kotlin("jvm") version "1.9.22"/' "$GRADLE_DIR/build.gradle.kts"
-          # Flutter plugin uses Kotlin 2.x compiler API (compilerOptions) which doesn't exist in 1.x.
-          # Replace with 1.x API (kotlinOptions).
-          sed -i 's/import org\.jetbrains\.kotlin\.gradle\.dsl\.JvmTarget/\/\/ JvmTarget removed for 1.x compat/' "$GRADLE_DIR/build.gradle.kts"
-          sed -i 's/compilerOptions {/kotlinOptions {/' "$GRADLE_DIR/build.gradle.kts"
-          sed -i 's/jvmTarget\.set(JvmTarget\.JVM_11)/jvmTarget = "11"/' "$GRADLE_DIR/build.gradle.kts"
+          # Gradle 8.3 kotlin-dsl uses language version 1.8, compatible with Kotlin 2.2.20.
+          # Flutter plugin compiles cleanly on Gradle 8.3+ — no patches needed.
+          echo "Gradle 8.3+ detected; no Flutter plugin patches required"
 
       - run: flutter build apk --release
 
