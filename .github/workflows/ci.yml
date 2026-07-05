@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+defaults:
+  run:
+    working-directory: maya_on_the_fly
+
 jobs:
   analyze-and-test:
     runs-on: ubuntu-latest

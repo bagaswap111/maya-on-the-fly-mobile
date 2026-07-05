@@ -6,6 +6,10 @@ on:
       - 'v*'
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: maya_on_the_fly
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -26,7 +30,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk/*.apk
+          path: maya_on_the_fly/build/app/outputs/flutter-apk/*.apk
 
   build-ios:
     runs-on: macos-latest
@@ -47,7 +51,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: release-ipa
-          path: build/ios/iphoneos/*.app
+          path: maya_on_the_fly/build/ios/iphoneos/*.app
 
   release:
     needs: [build-android, build-ios]
