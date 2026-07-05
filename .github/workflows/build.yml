@@ -46,12 +46,12 @@ jobs:
 
       - run: flutter pub get
 
-      - run: flutter build ios --release --no-codesign
+      - run: flutter build ipa --release --no-codesign
 
       - uses: actions/upload-artifact@v6
         with:
           name: release-ipa
-          path: maya_on_the_fly/build/ios/iphoneos/*.app
+          path: maya_on_the_fly/build/ios/ipa/*.ipa
 
   release:
     needs: [build-android, build-ios]
