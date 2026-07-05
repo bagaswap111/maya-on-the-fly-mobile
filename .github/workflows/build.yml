@@ -29,10 +29,11 @@ jobs:
         run: |
           FLUTTER_DIR=$(dirname $(dirname $(which flutter)))
           GRADLE_DIR="$FLUTTER_DIR/packages/flutter_tools/gradle"
-          cd "$GRADLE_DIR"
           # Change compileOnly to implementation so AGP is bundled into the plugin JAR
-          sed -i 's/compileOnly("com.android.tools.build/implementation("com.android.tools.build/' build.gradle.kts
-          ./gradlew publishToMavenLocal
+          sed -i 's/compileOnly("com.android.tools.build/implementation("com.android.tools.build/' "$GRADLE_DIR/build.gradle.kts"
+          # Use the Android project's Gradle wrapper targeting the Flutter plugin
+          android/gradlew -p "$GRADLE_DIR" publishToMavenLocal
+        timeout-minutes: 10
 
       - run: flutter build apk --release
 
