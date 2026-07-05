@@ -29,14 +29,16 @@ jobs:
         run: |
           FLUTTER_DIR=$(dirname $(dirname $(which flutter)))
           GRADLE_DIR="$FLUTTER_DIR/packages/flutter_tools/gradle"
-          # kotlin-dsl in Gradle 7.x sets languageVersion=1.4, incompatible with Kotlin 2.2.20
-          # Set language version in gradle.properties so it takes effect before build script compilation
-          echo "kotlin.compiler.languageVersion=2.0" >> "$GRADLE_DIR/gradle.properties"
-          echo "kotlin.compiler.apiVersion=2.0" >> "$GRADLE_DIR/gradle.properties"
-          # Also configure Kotlin compile tasks for the plugin's own source code
-          printf '\ntasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {\n' >> "$GRADLE_DIR/build.gradle.kts"
-          printf '    compilerOptions.languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)\n' >> "$GRADLE_DIR/build.gradle.kts"
-          printf '}\n' >> "$GRADLE_DIR/build.gradle.kts"
+          # Clean any artifacts from previous patch runs
+          rm -f "$GRADLE_DIR/gradle.properties"
+          # Gradle 7.6.3 kotlin-dsl sets languageVersion=1.4 by default.
+          # Kotlin 2.x removed support for language version 1.4, so downgrade to Kotlin 1.9.22.
+          sed -i 's/kotlin("jvm") version "2\.2\.20"/kotlin("jvm") version "1.9.22"/' "$GRADLE_DIR/build.gradle.kts"
+          # Flutter plugin uses Kotlin 2.x compiler API (compilerOptions) which doesn't exist in 1.x.
+          # Replace with 1.x API (kotlinOptions).
+          sed -i 's/import org\.jetbrains\.kotlin\.gradle\.dsl\.JvmTarget/\/\/ JvmTarget removed for 1.x compat/' "$GRADLE_DIR/build.gradle.kts"
+          sed -i 's/compilerOptions {/kotlinOptions {/' "$GRADLE_DIR/build.gradle.kts"
+          sed -i 's/jvmTarget\.set(JvmTarget\.JVM_11)/jvmTarget = "11"/' "$GRADLE_DIR/build.gradle.kts"
 
       - run: flutter build apk --release
 
