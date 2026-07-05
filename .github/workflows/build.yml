@@ -25,6 +25,15 @@ jobs:
 
       - run: flutter pub get
 
+      - name: Pre-compile Flutter Gradle plugin (bundle AGP)
+        run: |
+          FLUTTER_DIR=$(dirname $(dirname $(which flutter)))
+          GRADLE_DIR="$FLUTTER_DIR/packages/flutter_tools/gradle"
+          cd "$GRADLE_DIR"
+          # Change compileOnly to implementation so AGP is bundled into the plugin JAR
+          sed -i 's/compileOnly("com.android.tools.build/implementation("com.android.tools.build/' build.gradle.kts
+          ./gradlew publishToMavenLocal
+
       - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v6
