@@ -1,0 +1,71 @@
+PODS:
+  - flutter_secure_storage_macos (6.1.3):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+  - git2dart_binaries (1.11.2):
+    - FlutterMacOS
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - printing (1.0.0):
+    - FlutterMacOS
+  - share_plus (0.0.1):
+    - FlutterMacOS
+  - sqflite (0.0.3):
+    - Flutter
+    - FlutterMacOS
+  - SQLCipher (4.10.0):
+    - SQLCipher/standard (= 4.10.0)
+  - SQLCipher/common (4.10.0)
+  - SQLCipher/standard (4.10.0):
+    - SQLCipher/common
+  - sqlcipher_flutter_libs (0.0.1):
+    - FlutterMacOS
+    - SQLCipher (~> 4.10.0)
+
+DEPENDENCIES:
+  - flutter_secure_storage_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - git2dart_binaries (from `Flutter/ephemeral/.symlinks/plugins/git2dart_binaries/macos`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - printing (from `Flutter/ephemeral/.symlinks/plugins/printing/macos`)
+  - share_plus (from `Flutter/ephemeral/.symlinks/plugins/share_plus/macos`)
+  - sqflite (from `Flutter/ephemeral/.symlinks/plugins/sqflite/darwin`)
+  - sqlcipher_flutter_libs (from `Flutter/ephemeral/.symlinks/plugins/sqlcipher_flutter_libs/macos`)
+
+SPEC REPOS:
+  trunk:
+    - SQLCipher
+
+EXTERNAL SOURCES:
+  flutter_secure_storage_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  git2dart_binaries:
+    :path: Flutter/ephemeral/.symlinks/plugins/git2dart_binaries/macos
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+  printing:
+    :path: Flutter/ephemeral/.symlinks/plugins/printing/macos
+  share_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/share_plus/macos
+  sqflite:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqflite/darwin
+  sqlcipher_flutter_libs:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqlcipher_flutter_libs/macos
+
+SPEC CHECKSUMS:
+  flutter_secure_storage_macos: c2754d3483d20bb207bb9e5a14f1b8e771abcdb9
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  git2dart_binaries: 4b685b9f71ea9d07ebbdc9af691228dac37ed0cc
+  path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
+  printing: 1dd6a1fce2209ec240698e2439a4adbb9b427637
+  share_plus: 76dd39142738f7a68dd57b05093b5e8193f220f7
+  sqflite: 673a0e54cc04b7d6dba8d24fb8095b31c3a99eec
+  SQLCipher: eb79c64049cb002b4e9fcb30edb7979bf4706dfc
+  sqlcipher_flutter_libs: b2e241f8261d6fbda9bca91e9a14f64e47413a64
+
+PODFILE CHECKSUM: 9ebaf0ce3d369aaa26a9ea0e159195ed94724cf3
+
+COCOAPODS: 1.13.0
