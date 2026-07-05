@@ -25,15 +25,12 @@ jobs:
 
       - run: flutter pub get
 
-      - name: Pre-compile Flutter Gradle plugin (bundle AGP)
+      - name: Patch Flutter Gradle plugin for Gradle 7 compatibility
         run: |
           FLUTTER_DIR=$(dirname $(dirname $(which flutter)))
           GRADLE_DIR="$FLUTTER_DIR/packages/flutter_tools/gradle"
-          # Change compileOnly to implementation so AGP is bundled into the plugin JAR
-          sed -i 's/compileOnly("com.android.tools.build/implementation("com.android.tools.build/' "$GRADLE_DIR/build.gradle.kts"
-          # Use the Android project's Gradle wrapper targeting the Flutter plugin
-          android/gradlew -p "$GRADLE_DIR" publishToMavenLocal
-        timeout-minutes: 10
+          # Remove kotlin("jvm") version line that conflicts with Gradle 7's kotlin-dsl
+          sed -i '/kotlin("jvm") version /d' "$GRADLE_DIR/build.gradle.kts"
 
       - run: flutter build apk --release
 
