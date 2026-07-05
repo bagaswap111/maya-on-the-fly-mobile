@@ -1,0 +1,89 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: maya_on_the_fly
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.4
+          channel: stable
+
+      - run: flutter pub get
+
+      - name: Patch Flutter Gradle plugin for Gradle 7 compatibility
+        run: |
+          FLUTTER_DIR=$(dirname $(dirname $(which flutter)))
+          GRADLE_DIR="$FLUTTER_DIR/packages/flutter_tools/gradle"
+          # kotlin-dsl in Gradle 7.x sets languageVersion=1.4, incompatible with Kotlin 2.2.20
+          # Override to Kotlin 2.0 after kotlin-dsl configures tasks
+          cat >> "$GRADLE_DIR/build.gradle.kts" << 'EOF'
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions.languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+}
+EOF
+
+      - run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: release-apk
+          path: maya_on_the_fly/build/app/outputs/flutter-apk/*.apk
+
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.4
+          channel: stable
+
+      - run: flutter pub get
+
+      - run: flutter build ipa --release --no-codesign
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: release-ipa
+          path: maya_on_the_fly/build/ios/ipa/*.ipa
+
+  release:
+    needs: [build-android, build-ios]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: release-apk
+          path: artifacts
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: release-ipa
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: artifacts/*
+          generate_release_notes: true
