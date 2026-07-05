@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/error_handler.dart';
 import '../data/git_service.dart';
 
 class GitDiffPage extends StatefulWidget {
@@ -30,6 +31,14 @@ class _GitDiffPageState extends State<GitDiffPage> {
       appBar: AppBar(
         title: const Text('Diff'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Legend',
+            onPressed: () => ErrorHandler.showInfo(context,
+              'Lines starting with + are additions.\n'
+              'Lines starting with - are deletions.',
+            ),
+          ),
           SegmentedButton<bool>(
             segments: const [
               ButtonSegment(value: false, label: Text('Working'), icon: Icon(Icons.edit_note)),

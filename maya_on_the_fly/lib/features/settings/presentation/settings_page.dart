@@ -8,10 +8,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        actions: [IconButton(icon: const Icon(Icons.search), onPressed: () {})],
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
           _Section(title: 'Profile', children: [
@@ -30,8 +27,12 @@ class SettingsPage extends StatelessWidget {
           _Section(title: 'Privacy & Security', children: [
             _Tile(icon: Icons.lock, title: 'App Lock', trailing: const Icon(Icons.chevron_right), onTap: () => context.push('/settings/privacy')),
           ]),
+          _Section(title: 'Support', children: [
+            _Tile(icon: Icons.help_outline, title: 'Help & FAQ', trailing: const Icon(Icons.chevron_right), onTap: () => context.push('/settings/about')),
+          ]),
           _Section(title: 'About', children: [
             _Tile(icon: Icons.info_outline, title: 'About', trailing: const Text('v1.0.0'), onTap: () => context.push('/settings/about')),
+            _Tile(icon: Icons.keyboard, title: 'Keyboard Shortcuts', trailing: const Icon(Icons.chevron_right), onTap: () => context.push('/settings/shortcuts')),
           ]),
         ],
       ),

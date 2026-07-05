@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:git2dart/git2dart.dart' show GitStatus;
+import '../../../utils/error_handler.dart';
 import '../data/git_service.dart';
 
 class GitStatusPage extends StatefulWidget {
@@ -38,7 +39,10 @@ class _GitStatusPageState extends State<GitStatusPage> {
         _statusEntries = _git.status;
         _currentBranch = _git.repo.head.shorthand;
         _repoPath = _git.repo.workdir;
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('GitStatusPage._refresh error: $e');
+        if (mounted) ErrorHandler.showError(context, 'Error reading git status');
+      }
       _loading = false;
     });
   }
@@ -54,6 +58,16 @@ class _GitStatusPageState extends State<GitStatusPage> {
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
           IconButton(icon: const Icon(Icons.dns_outlined), onPressed: () => context.push('/git/manage')),
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Git concepts',
+            onPressed: () => ErrorHandler.showInfo(context,
+              '• Stage: mark files to include in the next commit\n'
+              '• Commit: save staged changes as a snapshot\n'
+              '• Branch: independent line of development\n'
+              '• Unpushed: commits not yet sent to remote',
+            ),
+          ),
         ],
       ),
       body: Column(

@@ -37,7 +37,7 @@ class AboutPage extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.code),
                   title: Text('Flutter SDK'),
-                  trailing: Text('3.10.6'),
+                  trailing: Text('3.44.4'),
                 ),
                 Divider(height: 1),
                 ListTile(

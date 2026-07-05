@@ -51,6 +51,18 @@ class _ExportPageState extends State<ExportPage> {
 
   Future<void> _export(String format) async {
     if (_selectedDoc == null) return;
+
+    if (_lastResult != null) {
+      final overwrite = await ErrorHandler.showConfirmDialog(
+        context,
+        title: 'Overwrite export?',
+        message: 'A previous export exists. Do you want to overwrite it?',
+        confirmLabel: 'Overwrite',
+        isDestructive: true,
+      );
+      if (!overwrite) return;
+    }
+
     setState(() => _exporting = true);
 
     final doc = _selectedDoc!;

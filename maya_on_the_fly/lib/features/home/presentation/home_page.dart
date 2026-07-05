@@ -63,6 +63,7 @@ class _HomePageState extends State<HomePage> {
               message: 'No chats yet',
               action: 'Start a conversation',
               onAction: () {},
+              compact: true,
             ),
           ],
         ),
@@ -159,13 +160,14 @@ class _EmptyState extends StatelessWidget {
   final String message;
   final String action;
   final VoidCallback onAction;
-  const _EmptyState({required this.icon, required this.message, required this.action, required this.onAction});
+  final bool compact;
+  const _EmptyState({required this.icon, required this.message, required this.action, required this.onAction, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(DesignTokens.spaceXl),
+        padding: EdgeInsets.all(compact ? DesignTokens.spaceMd : DesignTokens.spaceXl),
         child: Column(
           children: [
             Icon(icon, size: 48, color: DesignTokens.muted.withValues(alpha: 0.5)),

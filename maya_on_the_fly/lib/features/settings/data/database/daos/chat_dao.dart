@@ -29,4 +29,16 @@ class ChatDao {
     await _db.db.delete('chat_messages', where: 'session_id = ?', whereArgs: [id]);
     await _db.db.delete('chat_sessions', where: 'id = ?', whereArgs: [id]);
   }
+
+  Future<void> updateMessage(String id, {required String content}) async {
+    await _db.db.update(
+      'chat_messages',
+      {'content': content},
+      where: 'id = ?', whereArgs: [id],
+    );
+  }
+
+  Future<void> deleteMessage(String id) async {
+    await _db.db.delete('chat_messages', where: 'id = ?', whereArgs: [id]);
+  }
 }

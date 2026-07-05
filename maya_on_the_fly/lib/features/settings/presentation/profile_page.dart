@@ -17,7 +17,15 @@ class _ProfilePageState extends State<ProfilePage> {
   final _signatureController = TextEditingController();
   String _mode = 'free';
   bool _loading = true;
+  bool _nameTouched = false;
+  bool _emailTouched = false;
   final String _profileId = 'default';
+
+  static final RegExp _emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
+  bool get _nameValid => _nameController.text.trim().isNotEmpty;
+  bool get _emailValid => _emailController.text.trim().isEmpty || _emailRegex.hasMatch(_emailController.text.trim());
+  bool get _canSave => _nameValid && _emailValid;
 
   @override
   void initState() {
@@ -41,6 +49,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _save() async {
+    if (!_canSave) {
+      setState(() { _nameTouched = true; _emailTouched = true; });
+      return;
+    }
     final now = DateTime.now().millisecondsSinceEpoch;
     await _dao.upsertProfile({
       'id': _profileId,
@@ -72,19 +84,35 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        actions: [IconButton(icon: const Icon(Icons.save), onPressed: _save)],
+        actions: [IconButton(
+          icon: const Icon(Icons.save),
+          onPressed: _save,
+          tooltip: 'Save profile',
+        )],
       ),
       body: ListView(
         padding: const EdgeInsets.all(DesignTokens.spaceMd),
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Name', hintText: 'Your display name'),
+            onChanged: (_) { if (_nameTouched) setState(() {}); },
+            decoration: InputDecoration(
+              labelText: 'Name',
+              hintText: 'Your display name',
+              errorText: _nameTouched && !_nameValid ? 'Name is required' : null,
+            ),
           ),
           const SizedBox(height: DesignTokens.spaceMd),
           TextField(
             controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email', hintText: 'your@email.com'),
+            onChanged: (_) { if (_emailTouched) setState(() {}); },
+            decoration: InputDecoration(
+              labelText: 'Email',
+              hintText: 'your@email.com',
+              errorText: _emailTouched && !_emailValid
+                ? (_emailController.text.trim().isEmpty ? null : 'Enter a valid email address')
+                : null,
+            ),
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: DesignTokens.spaceMd),

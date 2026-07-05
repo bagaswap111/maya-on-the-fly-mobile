@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../design/tokens.dart';
+import '../../../utils/error_handler.dart';
 import '../data/database/daos/usage_dao.dart';
 
 class UsageDashboardPage extends StatefulWidget {
@@ -35,7 +36,20 @@ class _UsageDashboardPageState extends State<UsageDashboardPage> {
     final totalCost = _records.fold<double>(0.0, (s, r) => s + (r['cost'] as num? ?? 0).toDouble());
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Usage Dashboard')),
+      appBar: AppBar(
+        title: const Text('Usage Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'What are tokens?',
+            onPressed: () => ErrorHandler.showInfo(context,
+              'Tokens are units of text processed by the AI model. '
+              '~1 token ≈ ¾ word. Input tokens are your messages, '
+              'output tokens are the AI\'s responses.',
+            ),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(

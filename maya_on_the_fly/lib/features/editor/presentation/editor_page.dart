@@ -52,16 +52,24 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   Future<void> _loadDocument(String id) async {
-    final doc = await _docService.getDocument(id);
-    if (mounted && doc != null) {
-      setState(() {
-        _docId = id;
-        _title = doc['title'] as String? ?? 'Untitled';
-        _controller.text = doc['content'] as String? ?? '';
-        _loading = false;
-      });
-    } else if (mounted) {
-      setState(() => _loading = false);
+    try {
+      final doc = await _docService.getDocument(id);
+      if (mounted && doc != null) {
+        setState(() {
+          _docId = id;
+          _title = doc['title'] as String? ?? 'Untitled';
+          _controller.text = doc['content'] as String? ?? '';
+          _loading = false;
+        });
+      } else if (mounted) {
+        setState(() => _loading = false);
+        ErrorHandler.showError(context, 'Document not found');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ErrorHandler.showError(context, 'Failed to load document: ${ErrorHandler.formatError(e)}');
+      }
     }
   }
 
@@ -73,10 +81,16 @@ class _EditorPageState extends State<EditorPage> {
 
   Future<void> _save() async {
     if (_docId == null) return;
-    await _docService.saveDocument(_docId!, _controller.text);
-    setState(() => _isDirty = false);
-    if (mounted) {
-      ErrorHandler.showSuccess(context, 'Saved');
+    try {
+      await _docService.saveDocument(_docId!, _controller.text);
+      setState(() => _isDirty = false);
+      if (mounted) {
+        ErrorHandler.showSuccess(context, 'Saved');
+      }
+    } catch (e) {
+      if (mounted) {
+        ErrorHandler.showError(context, 'Save failed: ${ErrorHandler.formatError(e)}');
+      }
     }
   }
 
@@ -120,6 +134,18 @@ class _EditorPageState extends State<EditorPage> {
               onPressed: () => setState(() => _previewMode = !_previewMode),
               tooltip: _previewMode ? 'Edit' : 'Preview',
             ),
+            if (!_previewMode)
+              IconButton(
+                icon: const Icon(Icons.help_outline),
+                tooltip: 'Markdown help',
+                onPressed: () => ErrorHandler.showInfo(context,
+                  '**bold**   *italic*   `code`\n'
+                  '# Heading 1   ## Heading 2\n'
+                  '[link text](url)   ![alt](img.png)\n'
+                  '- list item   > blockquote\n'
+                  '--- horizontal rule',
+                ),
+              ),
             if (_isDirty)
               IconButton(
                 icon: const Icon(Icons.save),

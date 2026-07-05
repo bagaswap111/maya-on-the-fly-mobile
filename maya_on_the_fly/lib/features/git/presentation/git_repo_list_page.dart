@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/error_handler.dart';
 import '../data/git_service.dart';
 
 class GitRepoListPage extends StatefulWidget {
@@ -21,7 +22,11 @@ class _GitRepoListPageState extends State<GitRepoListPage> {
   }
 
   void _load() {
-    try { _remotes = _git.getRemotes(); } catch (_) { _remotes = []; }
+    try { _remotes = _git.getRemotes(); } catch (e) {
+      debugPrint('GitRepoListPage._load error: $e');
+      _remotes = [];
+      if (mounted) ErrorHandler.showError(context, 'Failed to load remotes');
+    }
     if (mounted) setState(() {});
   }
 

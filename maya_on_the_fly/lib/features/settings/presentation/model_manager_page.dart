@@ -17,6 +17,10 @@ class _ModelManagerPageState extends State<ModelManagerPage> {
   bool _obscureKey = true;
   bool _loading = true;
   bool _showKeyWarning = false;
+  bool _keyTouched = false;
+
+  bool get _keyValid => _apiKeyController.text.trim().isEmpty || _apiKeyController.text.trim().startsWith('sk-');
+  bool get _canSaveKey => _keyValid;
 
   @override
   void initState() {
@@ -35,13 +39,17 @@ class _ModelManagerPageState extends State<ModelManagerPage> {
   }
 
   Future<void> _saveKey() async {
+    if (!_canSaveKey) {
+      setState(() => _keyTouched = true);
+      return;
+    }
     final key = _apiKeyController.text.trim();
     if (key.isEmpty) {
       await AppSecureStorage.delete('deepseek_api_key');
     } else {
       await AppSecureStorage.write('deepseek_api_key', key);
     }
-    setState(() => _showKeyWarning = false);
+    setState(() { _showKeyWarning = false; _keyTouched = false; });
     if (mounted) {
       ErrorHandler.showSuccess(context, 'API key saved');
     }
@@ -92,9 +100,11 @@ class _ModelManagerPageState extends State<ModelManagerPage> {
                         icon: Icon(_obscureKey ? Icons.visibility : Icons.visibility_off),
                         onPressed: () => setState(() => _obscureKey = !_obscureKey),
                       ),
+                      errorText: _keyTouched && !_keyValid ? 'API key should start with "sk-"' : null,
                     ),
                     onChanged: (_) {
                       if (!_showKeyWarning) setState(() => _showKeyWarning = true);
+                      if (_keyTouched) setState(() {});
                     },
                   ),
                   if (_showKeyWarning)

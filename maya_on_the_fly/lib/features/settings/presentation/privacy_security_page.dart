@@ -129,7 +129,7 @@ class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
                   const SizedBox(height: DesignTokens.spaceSm),
                   Text('• API keys are stored in device secure storage (Keychain/EncryptedSharedPreferences)', style: theme.textTheme.bodySmall),
                   const SizedBox(height: DesignTokens.spaceXxs),
-                  Text('• Database is encrypted with AES-256 via sqlcipher (pending Flutter upgrade)', style: theme.textTheme.bodySmall),
+                  Text('• Database is encrypted with AES-256 via sqlcipher', style: theme.textTheme.bodySmall),
                   const SizedBox(height: DesignTokens.spaceXxs),
                   Text('• Sensitive screens use FLAG_SECURE to prevent screenshotting', style: theme.textTheme.bodySmall),
                   const SizedBox(height: DesignTokens.spaceXxs),

@@ -58,4 +58,12 @@ class ChatService {
   Future<void> deleteSession(String id) async {
     await _chatDao.deleteSession(id);
   }
+
+  Future<void> updateMessage(String messageId, {required String content}) async {
+    await _chatDao.updateMessage(messageId, content: content);
+  }
+
+  Future<void> deleteMessage(String messageId) async {
+    await _chatDao.deleteMessage(messageId);
+  }
 }
