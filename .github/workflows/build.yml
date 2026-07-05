@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: subosito/flutter-action@v2
         with:
@@ -27,7 +27,7 @@ jobs:
 
       - run: flutter build apk --release
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: release-apk
           path: maya_on_the_fly/build/app/outputs/flutter-apk/*.apk
@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: subosito/flutter-action@v2
         with:
@@ -48,7 +48,7 @@ jobs:
 
       - run: flutter build ios --release --no-codesign
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: release-ipa
           path: maya_on_the_fly/build/ios/iphoneos/*.app
@@ -60,17 +60,17 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: release-apk
           path: artifacts
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: release-ipa
           path: artifacts
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: artifacts/*
           generate_release_notes: true
