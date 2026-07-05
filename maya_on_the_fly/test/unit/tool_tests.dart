@@ -5,6 +5,9 @@ import 'package:maya_on_the_fly/features/agent/data/tools/calculation_tools.dart
 import 'package:maya_on_the_fly/features/agent/data/tools/utility_tools.dart';
 import 'package:maya_on_the_fly/features/agent/data/tools/transformation_tools.dart';
 import 'package:maya_on_the_fly/features/agent/data/tools/code_tools.dart';
+import 'package:maya_on_the_fly/features/agent/data/tools/document_tools.dart';
+import 'package:maya_on_the_fly/features/agent/data/tools/file_tools.dart';
+import 'package:maya_on_the_fly/features/agent/data/tools/search_web_tools.dart';
 
 void main() {
   group('Calculation Tools', () {
@@ -204,7 +207,7 @@ void main() {
   group('Transformation Tools', () {
     test('SummarizeTextTool shortens long text', () async {
       final tool = SummarizeTextTool();
-      final longText = 'This is the first sentence. This is the second sentence. This is the third sentence. This is the fourth sentence.';
+      const longText = 'This is the first sentence. This is the second sentence. This is the third sentence. This is the fourth sentence.';
       final result = await tool.execute({'text': longText, 'max_length': 10});
       final data = jsonDecode(result);
       expect(data['success'], true);
@@ -362,7 +365,3 @@ List<Map<String, dynamic>> _createTestRegistry() {
   return tools.map((t) => t.toJson()).toList();
 }
 
-// Import these for the test registry
-import 'package:maya_on_the_fly/features/agent/data/tools/document_tools.dart';
-import 'package:maya_on_the_fly/features/agent/data/tools/file_tools.dart';
-import 'package:maya_on_the_fly/features/agent/data/tools/search_web_tools.dart';

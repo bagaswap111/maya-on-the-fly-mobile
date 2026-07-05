@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
 import '../data/git_service.dart';
 
 class GitRepoListPage extends StatefulWidget {
@@ -73,7 +71,7 @@ class _GitRepoListPageState extends State<GitRepoListPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.cloud_off, size: 48, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+                Icon(Icons.cloud_off, size: 48, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                 const SizedBox(height: 12),
                 Text('No remotes configured', style: theme.textTheme.bodyMedium),
                 const SizedBox(height: 8),

@@ -26,7 +26,6 @@ class _GitDiffPageState extends State<GitDiffPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Diff'),
@@ -48,7 +47,7 @@ class _GitDiffPageState extends State<GitDiffPage> {
               children: [
                 Icon(Icons.check_circle_outline, size: 48, color: Colors.green.shade300),
                 const SizedBox(height: 12),
-                Text('No changes'),
+                const Text('No changes'),
               ],
             ),
           )

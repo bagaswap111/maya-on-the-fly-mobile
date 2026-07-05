@@ -74,7 +74,7 @@ class AppendToDocumentTool extends Tool {
         return jsonEncode({'success': false, 'error': 'Document not found: $docId'});
       }
       final existing = rows.first['content'] as String? ?? '';
-      final updated = existing + '\n' + content;
+      final updated = '$existing\n$content';
       final now = DateTime.now().millisecondsSinceEpoch;
       await AppDatabase.instance.db.update('documents', {
         'content': updated,

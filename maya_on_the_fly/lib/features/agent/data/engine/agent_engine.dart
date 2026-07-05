@@ -1,13 +1,10 @@
 import 'dart:convert';
-import 'package:uuid/uuid.dart';
 import '../tools/tool.dart';
 import '../tools/tool_registry.dart';
 import '../agents/agent.dart';
 import '../agents/agent_registry.dart';
 import '../../../ai/data/ai_service.dart';
-import '../../../ai/data/providers/ai_provider.dart';
 
-const _uuid = Uuid();
 
 class AgentTurn {
   final String turnId;
@@ -157,7 +154,6 @@ class AgentEngine {
   }) async* {
     for (var turn = 0; turn < maxTurns; turn++) {
       final buffer = StringBuffer();
-      String? toolCallJson;
 
       await for (final chunk in _aiService.completeStream(
         providerId: _defaultProvider,

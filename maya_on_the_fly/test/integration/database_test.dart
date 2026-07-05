@@ -32,7 +32,7 @@ class MockPathProvider extends PathProviderPlatform with MockPlatformInterfaceMi
   }
 
   @override
-  Future<List<String>?> getExternalStoragePaths() async {
+  Future<List<String>?> getExternalStoragePaths({StorageDirectory? type}) async {
     return [Directory.systemTemp.path];
   }
 
@@ -47,7 +47,7 @@ class MockPathProvider extends PathProviderPlatform with MockPlatformInterfaceMi
   }
 
   @override
-  Future<String?> getExternalCachePaths() async {
+  Future<List<String>?> getExternalCachePaths() async {
     return [Directory.systemTemp.path];
   }
 }

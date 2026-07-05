@@ -55,8 +55,7 @@ class CalculateTool extends Tool {
     while (_pos < _input.length) {
       final c = _input[_pos];
       if (c == '+') { _pos++; left += _parseMulDiv(); }
-      else if (c == '-') { _pos++; left -= _parseMulDiv(); }
-      else break;
+      else if (c == '-') { _pos++; left -= _parseMulDiv(); } else { break; }
     }
     return left;
   }
@@ -71,8 +70,7 @@ class CalculateTool extends Tool {
         final right = _parsePower();
         if (right == 0) throw ArgumentError('Division by zero');
         left /= right;
-      }
-      else break;
+      } else { break; }
     }
     return left;
   }
@@ -100,14 +98,14 @@ class CalculateTool extends Tool {
   }
 
   double _parsePrimary() {
-    if (_pos >= _input.length) throw FormatException('Unexpected end of expression');
+    if (_pos >= _input.length) throw const FormatException('Unexpected end of expression');
 
     final c = _input[_pos];
     if (c == '(') {
       _pos++;
       final val = _parseAddSub();
       if (_pos >= _input.length || _input[_pos] != ')') {
-        throw FormatException('Missing closing parenthesis');
+        throw const FormatException('Missing closing parenthesis');
       }
       _pos++;
       return val;

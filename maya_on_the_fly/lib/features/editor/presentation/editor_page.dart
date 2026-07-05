@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import '../../../utils/error_handler.dart';
 import '../../documents/data/document_service.dart';
 
 class EditorPage extends StatefulWidget {
@@ -75,9 +76,7 @@ class _EditorPageState extends State<EditorPage> {
     await _docService.saveDocument(_docId!, _controller.text);
     setState(() => _isDirty = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Saved'), duration: Duration(seconds: 1)),
-      );
+      ErrorHandler.showSuccess(context, 'Saved');
     }
   }
 
@@ -104,8 +103,14 @@ class _EditorPageState extends State<EditorPage> {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     final theme = Theme.of(context);
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (!didPop) {
+          final shouldPop = await _onWillPop();
+          if (shouldPop && context.mounted) Navigator.of(context).pop();
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text(_title, style: theme.textTheme.titleMedium),
@@ -158,7 +163,7 @@ class _EditorPageState extends State<EditorPage> {
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              color: theme.colorScheme.surfaceVariant,
+              color: theme.colorScheme.surfaceContainerHighest,
               child: Row(
                 children: [
                   Text(

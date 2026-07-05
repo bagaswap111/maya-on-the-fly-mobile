@@ -2,8 +2,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppSecureStorage {
   AppSecureStorage._();
-  static final FlutterSecureStorage _storage = FlutterSecureStorage(
-    aOptions: const AndroidOptions(encryptedSharedPreferences: true),
+  static const FlutterSecureStorage _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
   static Future<void> write(String key, String value) => _storage.write(key: key, value: value);

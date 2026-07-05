@@ -25,25 +25,25 @@ class AboutPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: DesignTokens.spaceXl),
-          Card(
+          const Card(
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: const Text('Version'),
-                  trailing: const Text('1.0.0'),
+                  leading: Icon(Icons.info_outline),
+                  title: Text('Version'),
+                  trailing: Text('1.0.0'),
                 ),
-                const Divider(height: 1),
+                Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.code),
-                  title: const Text('Flutter SDK'),
-                  trailing: const Text('3.10.6'),
+                  leading: Icon(Icons.code),
+                  title: Text('Flutter SDK'),
+                  trailing: Text('3.10.6'),
                 ),
-                const Divider(height: 1),
+                Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.memory),
-                  title: const Text('Core Model'),
-                  trailing: const Text('DeepSeek V4 Flash'),
+                  leading: Icon(Icons.memory),
+                  title: Text('Core Model'),
+                  trailing: Text('DeepSeek V4 Flash'),
                 ),
               ],
             ),

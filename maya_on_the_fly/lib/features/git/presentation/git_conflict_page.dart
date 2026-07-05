@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../data/git_service.dart';
 
 class GitConflictPage extends StatelessWidget {
   const GitConflictPage({super.key});

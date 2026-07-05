@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../design/tokens.dart';
 import '../data/database/daos/usage_dao.dart';
-import '../data/database/app_database.dart';
 
 class UsageDashboardPage extends StatefulWidget {
   const UsageDashboardPage({super.key});

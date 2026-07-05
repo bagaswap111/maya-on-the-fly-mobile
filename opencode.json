@@ -4,5 +4,12 @@
     "skill": {
       "chain-of-truth": "allow"
     }
+  },
+  "agent": {
+    "ponytail": {
+      "description": "Full-stack Flutter engineer for Maya on the Fly — implements remaining Phase 6 tasks, DB CHECK constraints, and ongoing code quality.",
+      "mode": "subagent",
+      "permission": { "edit": "allow", "bash": "allow" }
+    }
   }
 }

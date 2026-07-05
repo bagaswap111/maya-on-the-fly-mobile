@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import '../../../design/tokens.dart';
+import '../../../utils/error_handler.dart';
 import '../../settings/data/database/daos/profile_dao.dart';
-import '../../settings/data/database/app_database.dart';
-import '../../ai/data/ai_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,7 +17,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _signatureController = TextEditingController();
   String _mode = 'free';
   bool _loading = true;
-  String _profileId = 'default';
+  final String _profileId = 'default';
 
   @override
   void initState() {
@@ -55,9 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
       'updated_at': now,
     });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile saved'), duration: Duration(seconds: 1)),
-      );
+      ErrorHandler.showSuccess(context, 'Profile saved');
     }
   }
 

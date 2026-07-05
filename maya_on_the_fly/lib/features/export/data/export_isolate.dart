@@ -95,7 +95,7 @@ void exportIsolateMain(SendPort sendPort) {
 Future<ExportIsolateResult> _performExport(ExportIsolateRequest request) async {
   final safeTitle = request.title.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
   final timestamp = DateTime.now().millisecondsSinceEpoch;
-  final filename = '${safeTitle}_${timestamp}';
+  final filename = '${safeTitle}_$timestamp';
 
   switch (request.format) {
     case 'txt':
@@ -201,7 +201,7 @@ String _markdownToHtml(String md) {
         codeLines.add(lines[i]);
         i++;
       }
-      buffer.writeln('<pre><code>${codeLines.join('\n').replaceAll('<', '<').replaceAll('>', '>')}</code></pre>');
+      buffer.writeln('<pre><code>${codeLines.join('\n').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</code></pre>');
     } else if (line.trim().isEmpty) {
       buffer.writeln('<br>');
     } else {

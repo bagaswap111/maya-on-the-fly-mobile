@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             _QuickActions(onNewDoc: _createDocument),
             const SizedBox(height: DesignTokens.spaceLg),
-            SectionHeader(title: 'Recent Documents', action: 'See All'),
+            const SectionHeader(title: 'Recent Documents', action: 'See All'),
             const SizedBox(height: DesignTokens.spaceSm),
             if (_loading)
               const Center(child: CircularProgressIndicator())
@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
             else
               ..._documents.map((doc) => _DocumentTile(doc: doc)),
             const SizedBox(height: DesignTokens.spaceLg),
-            SectionHeader(title: 'Recent Chats'),
+            const SectionHeader(title: 'Recent Chats'),
             const SizedBox(height: DesignTokens.spaceSm),
             _EmptyState(
               icon: Icons.chat_bubble_outline,
@@ -81,9 +81,9 @@ class _QuickActions extends StatelessWidget {
       children: [
         _ActionCard(icon: Icons.note_add_outlined, label: 'New Doc', onTap: onNewDoc),
         const SizedBox(width: DesignTokens.spaceSm),
-        _ActionCard(icon: Icons.add_comment_outlined, label: 'New Chat'),
+        const _ActionCard(icon: Icons.add_comment_outlined, label: 'New Chat'),
         const SizedBox(width: DesignTokens.spaceSm),
-        _ActionCard(icon: Icons.source_outlined, label: 'Open Repo'),
+        const _ActionCard(icon: Icons.source_outlined, label: 'Open Repo'),
       ],
     );
   }
@@ -168,7 +168,7 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.all(DesignTokens.spaceXl),
         child: Column(
           children: [
-            Icon(icon, size: 48, color: DesignTokens.muted.withOpacity(0.5)),
+            Icon(icon, size: 48, color: DesignTokens.muted.withValues(alpha: 0.5)),
             const SizedBox(height: DesignTokens.spaceSm),
             Text(message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: DesignTokens.muted)),
             const SizedBox(height: DesignTokens.spaceSm),

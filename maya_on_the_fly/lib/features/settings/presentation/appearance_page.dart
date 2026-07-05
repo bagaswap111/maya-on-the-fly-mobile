@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../utils/error_handler.dart';
 import '../../settings/data/database/daos/profile_dao.dart';
-import '../../settings/data/database/app_database.dart';
 
 class AppearancePage extends StatefulWidget {
   const AppearancePage({super.key});
@@ -49,9 +49,7 @@ class _AppearancePageState extends State<AppearancePage> {
       'updated_at': now,
     });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Appearance saved'), duration: Duration(seconds: 1)),
-      );
+      ErrorHandler.showSuccess(context, 'Appearance saved');
     }
   }
 

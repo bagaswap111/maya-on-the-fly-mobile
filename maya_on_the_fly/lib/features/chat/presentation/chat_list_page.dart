@@ -48,9 +48,9 @@ class _ChatListPageState extends State<ChatListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 48, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+                  Icon(Icons.chat_bubble_outline, size: 48, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
-                  Text('No conversations yet', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+                  Text('No conversations yet', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                   const SizedBox(height: 16),
                   FilledButton.tonal(onPressed: _newSession, child: const Text('Start a chat')),
                 ],

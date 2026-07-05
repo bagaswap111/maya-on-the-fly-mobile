@@ -44,11 +44,13 @@ class _ChatPageState extends State<ChatPage> {
       }
     }
     final messages = await _chatService.getMessages(sid);
-    if (mounted) setState(() {
-      _sessionId = sid;
-      _messages = messages;
-      _loading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _sessionId = sid;
+        _messages = messages;
+        _loading = false;
+      });
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -65,7 +67,7 @@ class _ChatPageState extends State<ChatPage> {
     );
 
     final updatedMessages = await _chatService.getMessages(_sessionId!);
-    setState(() => _messages = updatedMessages);
+    setState(() { _messages = updatedMessages; });
 
     final history = updatedMessages
       .where((m) => m['role'] != 'system')
@@ -96,10 +98,12 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     final finalMessages = await _chatService.getMessages(_sessionId!);
-    if (mounted) setState(() {
-      _messages = finalMessages;
-      _sending = false;
-    });
+    if (mounted) {
+      setState(() {
+        _messages = finalMessages;
+        _sending = false;
+      });
+    }
     _scrollToBottom();
   }
 
@@ -158,7 +162,7 @@ class _ChatPageState extends State<ChatPage> {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: isUser ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceVariant,
+                      color: isUser ? theme.colorScheme.primaryContainer : theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12).copyWith(
                         bottomRight: isUser ? const Radius.circular(0) : null,
                         bottomLeft: isUser ? null : const Radius.circular(0),

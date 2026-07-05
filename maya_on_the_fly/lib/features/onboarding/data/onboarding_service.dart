@@ -43,7 +43,7 @@ class OnboardingService {
   }
 
   /// Get onboarding steps with content
-  List<OnboardingStep> getSteps() => [
+  List<OnboardingStep> getSteps() => const [
     OnboardingStep(
       step: 0,
       title: 'Welcome to Maya on the Fly',

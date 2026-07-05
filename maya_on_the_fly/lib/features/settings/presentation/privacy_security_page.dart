@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../../design/tokens.dart';
 import '../../../utils/secure_storage.dart';
@@ -33,13 +32,15 @@ class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
 
     final available = await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
 
-    if (mounted) setState(() {
-      _appLockEnabled = lockVal == 'true';
-      _biometricEnabled = bioVal == 'true';
-      _autoLockMinutes = int.tryParse(autoLockVal ?? '') ?? 5;
-      _biometricAvailable = available;
-      _loading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _appLockEnabled = lockVal == 'true';
+        _biometricEnabled = bioVal == 'true';
+        _autoLockMinutes = int.tryParse(autoLockVal ?? '') ?? 5;
+        _biometricAvailable = available;
+        _loading = false;
+      });
+    }
   }
 
   Future<void> _toggleLock(bool value) async {

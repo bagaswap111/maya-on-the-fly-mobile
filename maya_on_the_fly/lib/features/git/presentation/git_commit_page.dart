@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../utils/error_handler.dart';
 import '../data/git_service.dart';
 
 class GitCommitPage extends StatefulWidget {
@@ -23,16 +24,12 @@ class _GitCommitPageState extends State<GitCommitPage> {
       _git.stageAll();
       final sha = _git.commit(msg);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Committed: ${sha.substring(0, 7)}'), backgroundColor: Colors.green),
-        );
+        ErrorHandler.showSuccess(context, 'Committed: ${sha.substring(0, 7)}');
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Commit failed: $e'), backgroundColor: Colors.red),
-        );
+        ErrorHandler.showError(context, 'Commit failed: $e');
         setState(() => _staging = false);
       }
     }
@@ -85,7 +82,7 @@ class _GitCommitPageState extends State<GitCommitPage> {
           const SizedBox(height: 16),
           Text(
             'All changes will be staged before committing.',
-            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
           ),
         ],
       ),

@@ -1,7 +1,6 @@
 import 'package:uuid/uuid.dart';
 import '../../settings/data/database/daos/chat_dao.dart';
 import '../../settings/data/database/daos/usage_dao.dart';
-import '../../settings/data/database/app_database.dart';
 
 const _uuid = Uuid();
 

@@ -54,8 +54,8 @@ class AppDatabase {
   }
 
   Future<void> _createTables(Database db) async {
-    // ponytail: add CHECK constraints at the DB for rules the app also enforces.
-    // Belt-and-suspenders — drop the app-side duplicate only if a measured reason appears.
+    // ponytail: belt-and-suspenders — DB CHECK constraints mirror app-level validation.
+    // Drop the app-side duplicate only if a measured reason appears.
     await db.execute('''
       CREATE TABLE IF NOT EXISTS documents (
         id TEXT PRIMARY KEY,
@@ -86,7 +86,7 @@ class AppDatabase {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         agent_id TEXT NOT NULL,
-        task_type TEXT,
+        task_type TEXT CHECK(task_type IS NULL OR task_type != ''),
         token_count INTEGER DEFAULT 0 CHECK(token_count >= 0),
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
@@ -158,8 +158,8 @@ class AppDatabase {
       CREATE TABLE IF NOT EXISTS task_model_mappings (
         id TEXT PRIMARY KEY,
         profile_id TEXT NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
-        task_type TEXT NOT NULL,
-        model_id TEXT NOT NULL,
+        task_type TEXT NOT NULL CHECK(task_type != ''),
+        model_id TEXT NOT NULL CHECK(model_id != ''),
         UNIQUE(profile_id, task_type)
       )
     ''');
@@ -167,10 +167,10 @@ class AppDatabase {
       CREATE TABLE IF NOT EXISTS usage_alerts (
         id TEXT PRIMARY KEY,
         profile_id TEXT NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
-        type TEXT NOT NULL,
-        metric TEXT NOT NULL,
+        type TEXT NOT NULL CHECK(type != ''),
+        metric TEXT NOT NULL CHECK(metric != ''),
         threshold REAL NOT NULL CHECK(threshold > 0),
-        period TEXT NOT NULL,
+        period TEXT NOT NULL CHECK(period != ''),
         is_enabled INTEGER DEFAULT 1 CHECK(is_enabled IN (0,1))
       )
     ''');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../design/tokens.dart';
+import '../../../utils/error_handler.dart';
 import '../../documents/data/document_service.dart';
 import '../data/export_service.dart';
 
@@ -83,9 +84,7 @@ class _ExportPageState extends State<ExportPage> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: ${result.error}'), backgroundColor: Theme.of(context).colorScheme.error),
-        );
+        ErrorHandler.showError(context, 'Export failed: ${result.error}');
       }
     }
   }
@@ -103,7 +102,7 @@ class _ExportPageState extends State<ExportPage> {
           Text('Select Document', style: theme.textTheme.titleMedium),
           const SizedBox(height: DesignTokens.spaceSm),
           DropdownButtonFormField<String>(
-            value: _selectedDoc?['id'] as String?,
+            initialValue: _selectedDoc?['id'] as String?,
             items: _documents.map((d) => DropdownMenuItem(
               value: d['id'] as String,
               child: Text(d['title'] as String? ?? 'Untitled'),

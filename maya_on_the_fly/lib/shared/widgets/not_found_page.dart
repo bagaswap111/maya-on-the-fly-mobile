@@ -14,7 +14,7 @@ class NotFoundPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.question_mark, size: 64, color: DesignTokens.muted.withOpacity(0.5)),
+              Icon(Icons.question_mark, size: 64, color: DesignTokens.muted.withValues(alpha: 0.5)),
               const SizedBox(height: DesignTokens.spaceLg),
               Text('Page Not Found', style: Theme.of(context).textTheme.headlineLarge),
               const SizedBox(height: DesignTokens.spaceSm),

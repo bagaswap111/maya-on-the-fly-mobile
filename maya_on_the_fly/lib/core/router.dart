@@ -22,6 +22,8 @@ import '../features/settings/presentation/keyboard_shortcuts_page.dart';
 import '../features/settings/presentation/about_page.dart';
 import '../features/cot/presentation/cot_project_list_page.dart';
 import '../features/cot/presentation/cot_artifact_editor_page.dart';
+import '../features/onboarding/presentation/onboarding_page.dart';
+import '../features/onboarding/data/onboarding_service.dart';
 import '../shared/widgets/shell_scaffold.dart';
 import '../shared/widgets/not_found_page.dart';
 
@@ -31,7 +33,17 @@ final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(d
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/',
+  redirect: (context, state) async {
+    if (state.fullPath == '/onboarding') return null;
+    final complete = await OnboardingService.instance.isOnboardingComplete();
+    if (!complete) return '/onboarding';
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingPage(),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) => ShellScaffold(navigationShell: navigationShell),
       branches: [

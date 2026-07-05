@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../design/tokens.dart';
+import '../../../utils/error_handler.dart';
 import '../../ai/data/providers/deepseek_provider.dart';
 import '../../../utils/secure_storage.dart';
 
@@ -43,9 +43,7 @@ class _ModelManagerPageState extends State<ModelManagerPage> {
     }
     setState(() => _showKeyWarning = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('API key saved'), duration: Duration(seconds: 1)),
-      );
+      ErrorHandler.showSuccess(context, 'API key saved');
     }
   }
 

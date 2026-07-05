@@ -212,7 +212,7 @@ class ExportService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         build: (context) => [
-          pw.Header(level: 0, child: pw.Text(title, style: pw.TextStyle(fontSize: 24))),
+          pw.Header(level: 0, child: pw.Text(title, style: const pw.TextStyle(fontSize: 24))),
           pw.Paragraph(text: content),
         ],
       ),
